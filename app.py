@@ -10,37 +10,41 @@ from fpdf import FPDF
 # ==========================================
 st.set_page_config(page_title="Dashboard IRC", page_icon="✝️", layout="wide")
 
-# CSS personalizado para Modo Oscuro/Elegante, Animaciones y Botones Modernos
+# CSS personalizado para Modo Oscuro/Elegante, Animaciones, Fuentes y Botones
 st.markdown("""
     <style>
+    /* Importar fuente de letra de carta (cursiva y elegante) */
+    @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap');
+
     /* Fondo general de la aplicación */
     .stApp {
         background-color: #0A192F; 
         color: #E2E8F0; 
     }
 
-    /* Título principal con degradado azul brillante */
+    /* Título principal más grande y con letra de carta */
     .titulo-portada {
-        font-size: 65px;
-        font-weight: 900;
+        font-size: 90px;
+        font-weight: 700;
         text-align: center;
-        font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
+        font-family: 'Dancing Script', cursive;
         background: -webkit-linear-gradient(45deg, #63B3ED, #90CDF4, #E2E8F0);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         margin-bottom: 0px;
-        padding-bottom: 0px;
-        line-height: 1.2;
+        padding-bottom: 10px;
+        line-height: 1.1;
     }
     
     .subtitulo-portada {
-        font-size: 26px;
+        font-size: 22px;
         font-weight: 500;
         text-align: center;
         color: #A0AEC0;
-        margin-top: 10px;
+        margin-top: 0px;
         margin-bottom: 40px;
         letter-spacing: 2px;
+        text-transform: uppercase;
     }
     
     .bienvenida {
@@ -52,12 +56,13 @@ st.markdown("""
         margin-bottom: 30px;
     }
 
-    /* ANIMACIÓN DE LA CRUZ (Flotación y Resplandor) */
+    /* ANIMACIÓN DE FLOTACIÓN (Cruz y Logo) */
     @keyframes float {
         0% { transform: translateY(0px); filter: drop-shadow(0 0 10px rgba(99, 179, 237, 0.4)); }
-        50% { transform: translateY(-12px); filter: drop-shadow(0 0 25px rgba(99, 179, 237, 0.9)); }
+        50% { transform: translateY(-15px); filter: drop-shadow(0 0 25px rgba(99, 179, 237, 0.9)); }
         100% { transform: translateY(0px); filter: drop-shadow(0 0 10px rgba(99, 179, 237, 0.4)); }
     }
+    
     .cruz-animada {
         width: 130px;
         animation: float 3.5s ease-in-out infinite;
@@ -66,16 +71,13 @@ st.markdown("""
         margin-bottom: 20px;
     }
 
-    /* Logo Circular */
+    /* Logo Circular con animación de flotación */
     [data-testid="stImage"] img {
         border-radius: 50%;
         box-shadow: 0 10px 30px rgba(99, 179, 237, 0.2);
         border: 4px solid #2B6CB0;
         object-fit: cover;
-        transition: transform 0.3s ease;
-    }
-    [data-testid="stImage"] img:hover {
-        transform: scale(1.05);
+        animation: float 3.5s ease-in-out infinite;
     }
 
     /* Estilo general para todos los botones */
@@ -107,7 +109,7 @@ st.markdown("""
         box-shadow: 0 8px 16px rgba(0,0,0,0.4);
     }
     [data-testid="metric-container"] label { color: #8892B0 !important; font-size: 18px !important; }
-    [data-testid="metric-container"] div { color: #63B3ED !important; }
+    [data-testid="metric-container"] div { color: #63B3ED !important; font-size: 32px !important; }
 
     /* Entradas de texto */
     .stTextInput > div > div > input, .stSelectbox > div > div > div {
@@ -115,6 +117,18 @@ st.markdown("""
         color: white !important;
         border-radius: 8px !important;
         border: 1px solid #2B6CB0 !important;
+    }
+    
+    /* Pie de página (Versículo) */
+    .footer-versiculo {
+        text-align: center;
+        font-size: 18px;
+        font-style: italic;
+        color: #8892B0;
+        margin-top: 60px;
+        padding-top: 20px;
+        border-top: 1px solid #233554;
+        font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -194,10 +208,11 @@ elif menu == "📊 Dashboard":
     if df.empty:
         st.warning("No hay miembros registrados aún. Usa el botón '➕ Agregar' del menú superior.")
     else:
-        col1, col2, col3 = st.columns(3)
+        col1, col2, col3, col4 = st.columns(4)
         col1.metric("👥 Total de Miembros", len(df))
         col2.metric("👑 Líderes Activos", len(df[df["Rol"] == "Líder del Ministerio"]))
         col3.metric("🔥 En Ministerios", len(df[df["Estado en Ministerio"] == "Activo en Ministerio"]))
+        col4.metric("🚶 No Activos / Miembros", len(df[df["Estado en Ministerio"] == "Solo Miembro Normal"]))
         
         st.write("---")
         st.subheader("📋 Lista General de la Congregación")
@@ -226,7 +241,7 @@ elif menu == "🎂 Cumpleaños":
         st.warning("No hay datos registrados.")
 
 # ==========================================
-# SECCIÓN 4: AGREGAR MIEMBRO (CORREGIDO)
+# SECCIÓN 4: AGREGAR MIEMBRO
 # ==========================================
 elif menu == "➕ Agregar":
     st.header("➕ Registro de Nuevo Miembro")
@@ -245,11 +260,9 @@ elif menu == "➕ Agregar":
             fecha_nac = st.date_input("Fecha de Nacimiento *", min_value=date(1920, 1, 1), max_value=date.today())
             
             st.write("### Participación en la Iglesia")
-            # ELIMINAMOS LA PREGUNTA CONFUSA, AHORA ES AUTOMÁTICO
             ministerios = ["Ninguno", "Alabanza", "Intercesión", "Diáconos (Servidores)", "Docentes de Escuela Dominical", "Evangelismo", "Danza"]
             ministerio = st.selectbox("Seleccione el Ministerio", ministerios)
             
-            # Dejamos "No Aplica" de primero por defecto
             rol = st.selectbox("Rol en el Ministerio", ["No Aplica", "Miembro del Ministerio", "Líder del Ministerio"])
 
         st.write("* Campos obligatorios")
@@ -262,14 +275,13 @@ elif menu == "➕ Agregar":
                 edad = calcular_edad(fecha_nac)
                 nuevo_id = len(df) + 1
                 
-                # LÓGICA INTELIGENTE: Detecta el estado en base a lo que elijas
                 estado_ministerio = "Activo en Ministerio" if ministerio != "Ninguno" else "Solo Miembro Normal"
                 rol_final = rol if ministerio != "Ninguno" else "No Aplica"
                 
                 nuevo_registro = {
                     "ID": nuevo_id, "Nombre Completo": nombre, "Teléfono": telefono, "Correo": correo,
                     "Dirección": direccion, "Fecha de Nacimiento": fecha_nac, "Edad": edad, "Género": genero,
-                    "Estado en Ministerio": estado_ministerio, # Se guarda el automático
+                    "Estado en Ministerio": estado_ministerio,
                     "Ministerio": ministerio,
                     "Rol": rol_final
                 }
@@ -353,3 +365,8 @@ elif menu == "💾 Exportar":
             st.download_button("🟩 Descargar Excel", data=buffer_excel.getvalue(), file_name=f"Miembros_IRC_{date.today()}.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
         with col3:
             st.download_button("🟥 Descargar PDF", data=pdf_bytes, file_name=f"Miembros_IRC_{date.today()}.pdf", mime="application/pdf", use_container_width=True)
+
+# ==========================================
+# FOOTER (VERSÍCULO)
+# ==========================================
+st.markdown('<div class="footer-versiculo">Colosenses 3:23: Hagan todo lo que hagan de corazón, como para el Señor y no para los hombres.</div>', unsafe_allow_html=True)
