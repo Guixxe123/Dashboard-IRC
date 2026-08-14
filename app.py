@@ -10,50 +10,72 @@ from fpdf import FPDF
 # ==========================================
 st.set_page_config(page_title="Dashboard IRC", page_icon="🕊️", layout="wide")
 
-# CSS personalizado para títulos grandes y botones bonitos
+# CSS personalizado ultra moderno
 st.markdown("""
     <style>
+    /* Título principal con degradado premium */
     .titulo-portada {
-        font-size: 70px;
+        font-size: 65px;
         font-weight: 900;
         text-align: center;
-        font-family: 'Helvetica Neue', sans-serif;
+        font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
+        background: -webkit-linear-gradient(45deg, #1A365D, #2B6CB0, #3182CE);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
         margin-bottom: 0px;
         padding-bottom: 0px;
+        line-height: 1.2;
     }
+    
+    /* Subtítulo elegante */
     .subtitulo-portada {
-        font-size: 38px;
-        font-weight: 600;
+        font-size: 28px;
+        font-weight: 400;
         text-align: center;
-        color: #85929E;
-        margin-top: -10px;
-        margin-bottom: 40px;
+        color: #718096;
+        margin-top: 10px;
+        margin-bottom: 50px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
     }
-    .logo-espacio {
-        border: 2px dashed #BDC3C7;
-        border-radius: 15px;
-        background-color: #F8F9F9;
-        padding: 60px;
-        text-align: center;
-        color: #7F8C8D;
-        margin: 0 auto;
-        width: 300px;
-        font-size: 18px;
+    
+    /* Frase de bienvenida */
+    .bienvenida {
+        text-align: center; 
+        font-size: 26px; 
+        color: #2D3748; 
+        font-weight: 500;
+        margin-top: 30px;
     }
-    /* Estilo para los botones principales */
+
+    /* Convertir cualquier imagen de Streamlit en un círculo elegante con sombra */
+    [data-testid="stImage"] img {
+        border-radius: 50%;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        border: 5px solid #ffffff;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+    [data-testid="stImage"] img:hover {
+        transform: scale(1.03);
+    }
+
+    /* Botones modernos y redondeados */
     div.stButton > button:first-child {
-        background-color: #283747;
+        background: linear-gradient(135deg, #2B6CB0 0%, #2C5282 100%);
         color: white;
-        border-radius: 8px;
+        border-radius: 30px;
         border: none;
-        padding: 10px 24px;
-        font-weight: bold;
-        transition: 0.3s;
+        padding: 12px 30px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        box-shadow: 0 4px 15px rgba(43, 108, 176, 0.3);
+        transition: all 0.3s ease;
     }
     div.stButton > button:first-child:hover {
-        background-color: #17A589;
-        color: white;
-        transform: scale(1.02);
+        background: linear-gradient(135deg, #3182CE 0%, #2B6CB0 100%);
+        box-shadow: 0 8px 20px rgba(43, 108, 176, 0.4);
+        transform: translateY(-3px);
     }
     </style>
 """, unsafe_allow_html=True)
@@ -75,7 +97,8 @@ def calcular_edad(fecha_nacimiento):
 # ==========================================
 # BARRA LATERAL DE NAVEGACIÓN
 # ==========================================
-st.sidebar.image("https://cdn-icons-png.flaticon.com/512/3389/3389081.png", width=100) 
+# Cambié el logo lateral por uno más moderno también
+st.sidebar.image("https://cdn-icons-png.flaticon.com/512/2072/2072130.png", width=120) 
 st.sidebar.title("Navegación")
 menu = st.sidebar.radio(
     "Ir a:",
@@ -89,13 +112,22 @@ df = st.session_state.miembros_df
 # SECCIÓN 1: INICIO (PORTADA)
 # ==========================================
 if menu == "🏠 Inicio (Portada)":
-    st.markdown('<p class="titulo-portada">IGLESIA RESTAURACIÓN CRISTIANA (IRC)</p>', unsafe_allow_html=True)
-    st.markdown('<p class="subtitulo-portada">Dashboard de Miembros</p>', unsafe_allow_html=True)
+    st.markdown('<p class="titulo-portada">IGLESIA RESTAURACIÓN CRISTIANA</p>', unsafe_allow_html=True)
+    st.markdown('<p class="subtitulo-portada">Dashboard Oficial de Miembros (IRC)</p>', unsafe_allow_html=True)
     
-    st.markdown('<div class="logo-espacio">🖼️ <br><br> Espacio para el Logo de IRC</div>', unsafe_allow_html=True)
+    # Se usan columnas para centrar perfectamente la imagen del logo
+    col1, col2, col3 = st.columns([1.5, 1, 1.5])
+    with col2:
+        # Asegúrate de que tu imagen se llame exactamente "logo.png" y esté en la misma carpeta
+        try:
+            st.image("logo.png", use_container_width=True)
+        except:
+            # Si aún no subes el logo, mostrará una imagen por defecto elegante
+            st.image("https://images.unsplash.com/photo-1438032005730-c779502df39b?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80", use_container_width=True)
+            st.info("💡 Sube tu archivo 'logo.png' a GitHub para que reemplace esta imagen por la de tu Iglesia.")
     
     st.write("---")
-    st.markdown("<h3 style='text-align: center; font-size: 32px;'>Bienvenido al sistema de gestión de la congregación.</h3>", unsafe_allow_html=True)
+    st.markdown("<p class='bienvenida'>Bienvenido al sistema moderno de gestión de la congregación.</p>", unsafe_allow_html=True)
 
 # ==========================================
 # SECCIÓN 2: DASHBOARD PRINCIPAL
