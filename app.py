@@ -173,9 +173,21 @@ if 'menu_option' not in st.session_state:
     st.session_state.menu_option = opciones_menu[0]
 
 # ==========================================
-# BARRA LATERAL (Con la cruz animada)
+# BARRA LATERAL (Con la cruz de madera animada)
 # ==========================================
-st.sidebar.markdown('<img src="https://cdn-icons-png.flaticon.com/512/1051/1051474.png" class="cruz-animada">', unsafe_allow_html=True)
+st.sidebar.markdown('''
+    <svg class="cruz-animada" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <linearGradient id="gradMadera" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#8B5A2B;stop-opacity:1" />
+                <stop offset="50%" style="stop-color:#5C3A21;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#3E2723;stop-opacity:1" />
+            </linearGradient>
+        </defs>
+        <path d="M40,10 L60,10 L60,40 L90,40 L90,60 L60,60 L60,110 L40,110 L40,60 L10,60 L10,40 L40,40 Z" 
+              fill="url(#gradMadera)" stroke="#2E1A0F" stroke-width="2"/>
+    </svg>
+''', unsafe_allow_html=True)
 
 st.sidebar.title("Menú Alterno")
 menu = st.sidebar.radio("Ir a:", opciones_menu, key="menu_option")
