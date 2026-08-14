@@ -10,7 +10,7 @@ from fpdf import FPDF
 # ==========================================
 st.set_page_config(page_title="Dashboard IRC", page_icon="✝️", layout="wide")
 
-# CSS personalizado para Modo Oscuro/Elegante, Animaciones, Fuentes y Botones
+# CSS personalizado para Modo Oscuro/Elegante, Animaciones, Fuentes, Botones y Celulares
 st.markdown("""
     <style>
     /* Importar fuente de letra de carta (cursiva y elegante) */
@@ -42,9 +42,20 @@ st.markdown("""
         text-align: center;
         color: #A0AEC0;
         margin-top: 0px;
-        margin-bottom: 40px;
+        margin-bottom: 30px;
         letter-spacing: 2px;
         text-transform: uppercase;
+    }
+    
+    /* Adaptación para pantallas de Celular (Mobile Responsive) */
+    @media (max-width: 768px) {
+        .titulo-portada {
+            font-size: 50px !important;
+        }
+        .subtitulo-portada {
+            font-size: 14px !important;
+            margin-bottom: 20px;
+        }
     }
     
     .bienvenida {
@@ -52,7 +63,7 @@ st.markdown("""
         font-size: 24px; 
         color: #F7FAFC; 
         font-weight: 400;
-        margin-top: 30px;
+        margin-top: 20px;
         margin-bottom: 30px;
     }
 
@@ -80,8 +91,10 @@ st.markdown("""
         animation: float 3.5s ease-in-out infinite;
     }
 
-    /* Estilo general para todos los botones */
-    div.stButton > button {
+    /* Estilo general para TODOS los botones (Navegación, Formularios y Descargas) */
+    div.stButton > button, 
+    div.stDownloadButton > button, 
+    div.stFormSubmitButton > button {
         background: linear-gradient(135deg, #1E3A8A 0%, #3182CE 100%) !important;
         color: #FFFFFF !important;
         border-radius: 12px !important;
@@ -93,10 +106,14 @@ st.markdown("""
         transition: all 0.3s ease !important;
         width: 100%;
     }
-    div.stButton > button:hover {
+    
+    /* Efecto Flotante al pasar el mouse para TODOS los botones */
+    div.stButton > button:hover, 
+    div.stDownloadButton > button:hover, 
+    div.stFormSubmitButton > button:hover {
         background: linear-gradient(135deg, #2B6CB0 0%, #4299E1 100%) !important;
         box-shadow: 0 6px 20px rgba(99, 179, 237, 0.8) !important;
-        transform: translateY(-3px) !important;
+        transform: translateY(-4px) !important;
         border: 1px solid #E2E8F0 !important;
     }
 
@@ -166,17 +183,17 @@ menu = st.sidebar.radio("Ir a:", opciones_menu, key="menu_option")
 df = st.session_state.miembros_df
 
 # ==========================================
-# BARRA DE NAVEGACIÓN SUPERIOR
+# FUNCIÓN DEL MENÚ SUPERIOR (Para controlarlo mejor en celulares)
 # ==========================================
-st.markdown("<br>", unsafe_allow_html=True)
-nav1, nav2, nav3, nav4, nav5, nav6 = st.columns(6)
-with nav1: st.button("🏠 Inicio", on_click=ir_a, args=("🏠 Inicio",), use_container_width=True)
-with nav2: st.button("📊 Dashboard", on_click=ir_a, args=("📊 Dashboard",), use_container_width=True)
-with nav3: st.button("🎂 Cumple", on_click=ir_a, args=("🎂 Cumpleaños",), use_container_width=True)
-with nav4: st.button("➕ Agregar", on_click=ir_a, args=("➕ Agregar",), use_container_width=True)
-with nav5: st.button("🗑️ Eliminar", on_click=ir_a, args=("🗑️ Eliminar",), use_container_width=True)
-with nav6: st.button("💾 Exportar", on_click=ir_a, args=("💾 Exportar",), use_container_width=True)
-st.write("---")
+def mostrar_menu_superior():
+    nav1, nav2, nav3, nav4, nav5, nav6 = st.columns(6)
+    with nav1: st.button("🏠 Inicio", on_click=ir_a, args=("🏠 Inicio",), use_container_width=True)
+    with nav2: st.button("📊 Dashboard", on_click=ir_a, args=("📊 Dashboard",), use_container_width=True)
+    with nav3: st.button("🎂 Cumple", on_click=ir_a, args=("🎂 Cumpleaños",), use_container_width=True)
+    with nav4: st.button("➕ Agregar", on_click=ir_a, args=("➕ Agregar",), use_container_width=True)
+    with nav5: st.button("🗑️ Eliminar", on_click=ir_a, args=("🗑️ Eliminar",), use_container_width=True)
+    with nav6: st.button("💾 Exportar", on_click=ir_a, args=("💾 Exportar",), use_container_width=True)
+    st.write("---")
 
 # ==========================================
 # SECCIÓN 1: INICIO (PORTADA)
@@ -193,6 +210,11 @@ if menu == "🏠 Inicio":
             st.image("https://images.unsplash.com/photo-1438032005730-c779502df39b?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80", use_container_width=True)
             st.info("💡 Sube tu archivo 'logo.png' a GitHub.")
     
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # EN INICIO, EL MENÚ SE MUESTRA DESPUÉS DEL LOGO PARA QUE EN CELULARES NO ESTORBE AL PRINCIPIO
+    mostrar_menu_superior()
+    
     st.markdown("<p class='bienvenida'>Bienvenido al sistema moderno de gestión de la congregación.</p>", unsafe_allow_html=True)
     
     col_btn1, col_btn2, col_btn3 = st.columns([1, 1, 1])
@@ -203,6 +225,7 @@ if menu == "🏠 Inicio":
 # SECCIÓN 2: DASHBOARD PRINCIPAL
 # ==========================================
 elif menu == "📊 Dashboard":
+    mostrar_menu_superior() # EN LAS OTRAS PÁGINAS, EL MENÚ VA HASTA ARRIBA
     st.header("📊 Dashboard de Miembros")
     
     if df.empty:
@@ -222,6 +245,7 @@ elif menu == "📊 Dashboard":
 # SECCIÓN 3: CUMPLEAÑOS DEL MES
 # ==========================================
 elif menu == "🎂 Cumpleaños":
+    mostrar_menu_superior()
     st.header("🎂 Cumpleañeros de este Mes")
     mes_actual = date.today().month
     meses_nombres = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
@@ -244,6 +268,7 @@ elif menu == "🎂 Cumpleaños":
 # SECCIÓN 4: AGREGAR MIEMBRO
 # ==========================================
 elif menu == "➕ Agregar":
+    mostrar_menu_superior()
     st.header("➕ Registro de Nuevo Miembro")
     
     with st.form("form_nuevo_miembro", clear_on_submit=True):
@@ -293,6 +318,7 @@ elif menu == "➕ Agregar":
 # SECCIÓN 5: ELIMINAR MIEMBRO
 # ==========================================
 elif menu == "🗑️ Eliminar":
+    mostrar_menu_superior()
     st.header("🗑️ Eliminar Miembros")
     
     if df.empty:
@@ -312,6 +338,7 @@ elif menu == "🗑️ Eliminar":
 # SECCIÓN 6: EXPORTAR DATOS (EXCEL / PDF)
 # ==========================================
 elif menu == "💾 Exportar":
+    mostrar_menu_superior()
     st.header("💾 Exportar Base de Datos")
     
     if df.empty:
