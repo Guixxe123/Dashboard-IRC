@@ -16,7 +16,7 @@ st.markdown("""
     /* Importar fuente de letra de carta (cursiva y elegante) */
     @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap');
 
-    /* Fondo general de la aplicación */
+    /* Fondo general de la aplicación (Liso para el resto de páginas) */
     .stApp {
         background-color: #0A192F; 
         color: #E2E8F0; 
@@ -199,6 +199,19 @@ def mostrar_menu_superior():
 # SECCIÓN 1: INICIO (PORTADA)
 # ==========================================
 if menu == "🏠 Inicio":
+    # Inyectamos textura de fondo SOLO para la portada
+    st.markdown("""
+        <style>
+        .stApp {
+            background-color: #0A192F !important;
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(43, 108, 176, 0.15) 0%, transparent 60%),
+                radial-gradient(rgba(226, 232, 240, 0.04) 1.5px, transparent 1.5px) !important;
+            background-size: 100% 100%, 25px 25px !important;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
     st.markdown('<p class="titulo-portada">IGLESIA RESTAURACIÓN CRISTIANA</p>', unsafe_allow_html=True)
     st.markdown('<p class="subtitulo-portada">DASHBOARD OFICIAL DE MIEMBROS (IRC)</p>', unsafe_allow_html=True)
     
@@ -212,20 +225,17 @@ if menu == "🏠 Inicio":
     
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # EN INICIO, EL MENÚ SE MUESTRA DESPUÉS DEL LOGO PARA QUE EN CELULARES NO ESTORBE AL PRINCIPIO
+    # EN INICIO, EL MENÚ SE MUESTRA DESPUÉS DEL LOGO
     mostrar_menu_superior()
     
     st.markdown("<p class='bienvenida'>Bienvenido al sistema moderno de gestión de la congregación.</p>", unsafe_allow_html=True)
-    
-    col_btn1, col_btn2, col_btn3 = st.columns([1, 1, 1])
-    with col_btn2:
-        st.button("🚀 INGRESAR AL DASHBOARD", on_click=ir_a, args=("📊 Dashboard",), use_container_width=True)
+    # Se eliminó el botón de ingresar al dashboard aquí
 
 # ==========================================
 # SECCIÓN 2: DASHBOARD PRINCIPAL
 # ==========================================
 elif menu == "📊 Dashboard":
-    mostrar_menu_superior() # EN LAS OTRAS PÁGINAS, EL MENÚ VA HASTA ARRIBA
+    mostrar_menu_superior() 
     st.header("📊 Dashboard de Miembros")
     
     if df.empty:
