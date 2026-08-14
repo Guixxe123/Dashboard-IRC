@@ -183,7 +183,7 @@ menu = st.sidebar.radio("Ir a:", opciones_menu, key="menu_option")
 df = st.session_state.miembros_df
 
 # ==========================================
-# FUNCIÓN DEL MENÚ SUPERIOR (Para controlarlo mejor en celulares)
+# FUNCIÓN DEL MENÚ SUPERIOR
 # ==========================================
 def mostrar_menu_superior():
     nav1, nav2, nav3, nav4, nav5, nav6 = st.columns(6)
@@ -199,15 +199,14 @@ def mostrar_menu_superior():
 # SECCIÓN 1: INICIO (PORTADA)
 # ==========================================
 if menu == "🏠 Inicio":
-    # Inyectamos textura de fondo SOLO para la portada
+    # Textura formal: Resplandor central + Líneas diagonales elegantes (pinstripe)
     st.markdown("""
         <style>
         .stApp {
             background-color: #0A192F !important;
             background-image: 
-                radial-gradient(circle at 50% 50%, rgba(43, 108, 176, 0.15) 0%, transparent 60%),
-                radial-gradient(rgba(226, 232, 240, 0.04) 1.5px, transparent 1.5px) !important;
-            background-size: 100% 100%, 25px 25px !important;
+                radial-gradient(circle at 50% 50%, rgba(43, 108, 176, 0.25) 0%, transparent 65%),
+                repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.03) 0px, rgba(255, 255, 255, 0.03) 2px, transparent 2px, transparent 15px) !important;
         }
         </style>
     """, unsafe_allow_html=True)
@@ -224,12 +223,9 @@ if menu == "🏠 Inicio":
             st.info("💡 Sube tu archivo 'logo.png' a GitHub.")
     
     st.markdown("<br>", unsafe_allow_html=True)
-    
-    # EN INICIO, EL MENÚ SE MUESTRA DESPUÉS DEL LOGO
     mostrar_menu_superior()
     
     st.markdown("<p class='bienvenida'>Bienvenido al sistema moderno de gestión de la congregación.</p>", unsafe_allow_html=True)
-    # Se eliminó el botón de ingresar al dashboard aquí
 
 # ==========================================
 # SECCIÓN 2: DASHBOARD PRINCIPAL
