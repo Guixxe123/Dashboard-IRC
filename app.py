@@ -13,27 +13,24 @@ st.set_page_config(page_title="Dashboard IRC", page_icon="✝️", layout="wide"
 # CSS personalizado para Modo Oscuro/Elegante, Animaciones, Fuentes, Botones y Celulares
 st.markdown("""
     <style>
-    /* Importar fuente de letra de carta (cursiva y elegante) */
-    @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap');
-
     /* Fondo general de la aplicación (Liso para el resto de páginas) */
     .stApp {
         background-color: #0A192F; 
         color: #E2E8F0; 
     }
 
-    /* Título principal más grande y con letra de carta */
+    /* Título principal con letra normal, clara y elegante */
     .titulo-portada {
-        font-size: 90px;
+        font-size: 55px; /* Tamaño ajustado para letra normal */
         font-weight: 700;
         text-align: center;
-        font-family: 'Dancing Script', cursive;
+        font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
         background: -webkit-linear-gradient(45deg, #63B3ED, #90CDF4, #E2E8F0);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         margin-bottom: 0px;
         padding-bottom: 10px;
-        line-height: 1.1;
+        line-height: 1.2;
     }
     
     .subtitulo-portada {
@@ -50,7 +47,7 @@ st.markdown("""
     /* Adaptación para pantallas de Celular (Mobile Responsive) */
     @media (max-width: 768px) {
         .titulo-portada {
-            font-size: 50px !important;
+            font-size: 35px !important;
         }
         .subtitulo-portada {
             font-size: 14px !important;
@@ -223,7 +220,8 @@ if menu == "🏠 Inicio":
         </style>
     """, unsafe_allow_html=True)
 
-    st.markdown('<p class="titulo-portada">IGLESIA RESTAURACIÓN CRISTIANA</p>', unsafe_allow_html=True)
+    # AQUÍ ESTÁ EL CAMBIO SOLICITADO
+    st.markdown('<p class="titulo-portada">Pastor General José Manuel Rodríguez López</p>', unsafe_allow_html=True)
     st.markdown('<p class="subtitulo-portada">DASHBOARD OFICIAL DE MIEMBROS (IRC)</p>', unsafe_allow_html=True)
     
     col1, col2, col3 = st.columns([1.5, 1, 1.5])
