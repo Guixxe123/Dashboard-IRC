@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from datetime import date
+from datetime import date, datetime
 import io
 import tempfile
 from fpdf import FPDF
@@ -10,21 +10,28 @@ from fpdf import FPDF
 # ==========================================
 st.set_page_config(page_title="Dashboard IRC", page_icon="✝️", layout="wide")
 
-# CSS personalizado para Modo Oscuro/Elegante, Animaciones, Fuentes, Botones y Celulares
+# CSS personalizado para Modo Oscuro/Elegante, Animaciones, Fuentes Bembo Book, Botones y Celulares
 st.markdown("""
     <style>
-    /* Fondo general de la aplicación (Liso para el resto de páginas) */
+    /* Importar fuente serif elegante de respaldo */
+    @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;700&display=swap');
+
+    /* Aplicar Bembo Book a TODO, con EB Garamond de respaldo */
+    html, body, [class*="css"], .stApp, p, h1, h2, h3, div, span, label, button, input, select, textarea, table {
+        font-family: 'Bembo Book', 'EB Garamond', 'Times New Roman', serif !important;
+    }
+
+    /* Fondo general de la aplicación */
     .stApp {
         background-color: #0A192F; 
         color: #E2E8F0; 
     }
 
-    /* Título principal con letra normal, clara y elegante */
+    /* Título principal */
     .titulo-portada {
-        font-size: 55px; /* Tamaño ajustado para letra normal */
+        font-size: 55px; 
         font-weight: 700;
         text-align: center;
-        font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
         background: -webkit-linear-gradient(45deg, #63B3ED, #90CDF4, #E2E8F0);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
@@ -42,26 +49,18 @@ st.markdown("""
         margin-bottom: 30px;
         letter-spacing: 2px;
         text-transform: uppercase;
+        font-family: 'Segoe UI', sans-serif !important; /* Mantenemos subtitulo legible */
     }
     
-    /* Adaptación para pantallas de Celular (Mobile Responsive) */
+    /* Adaptación para pantallas de Celular */
     @media (max-width: 768px) {
-        .titulo-portada {
-            font-size: 35px !important;
-        }
-        .subtitulo-portada {
-            font-size: 14px !important;
-            margin-bottom: 20px;
-        }
+        .titulo-portada { font-size: 35px !important; }
+        .subtitulo-portada { font-size: 14px !important; margin-bottom: 20px; }
     }
     
     .bienvenida {
-        text-align: center; 
-        font-size: 24px; 
-        color: #F7FAFC; 
-        font-weight: 400;
-        margin-top: 20px;
-        margin-bottom: 30px;
+        text-align: center; font-size: 24px; color: #F7FAFC; font-weight: 400;
+        margin-top: 20px; margin-bottom: 30px;
     }
 
     /* ANIMACIÓN DE FLOTACIÓN (Cruz y Logo) */
@@ -72,90 +71,72 @@ st.markdown("""
     }
     
     .cruz-animada {
-        width: 130px;
-        animation: float 3.5s ease-in-out infinite;
-        display: block;
-        margin: 0 auto;
-        margin-bottom: 20px;
+        width: 130px; animation: float 3.5s ease-in-out infinite; display: block;
+        margin: 0 auto; margin-bottom: 20px;
     }
 
-    /* Logo Circular con animación de flotación */
+    /* Logo Circular */
     [data-testid="stImage"] img {
-        border-radius: 50%;
-        box-shadow: 0 10px 30px rgba(99, 179, 237, 0.2);
-        border: 4px solid #2B6CB0;
-        object-fit: cover;
-        animation: float 3.5s ease-in-out infinite;
+        border-radius: 50%; box-shadow: 0 10px 30px rgba(99, 179, 237, 0.2);
+        border: 4px solid #2B6CB0; object-fit: cover; animation: float 3.5s ease-in-out infinite;
     }
 
-    /* Estilo general para TODOS los botones (Navegación, Formularios y Descargas) */
-    div.stButton > button, 
-    div.stDownloadButton > button, 
-    div.stFormSubmitButton > button {
+    /* Estilo para TODOS los botones */
+    div.stButton > button, div.stDownloadButton > button, div.stFormSubmitButton > button {
         background: linear-gradient(135deg, #1E3A8A 0%, #3182CE 100%) !important;
-        color: #FFFFFF !important;
-        border-radius: 12px !important;
-        border: 1px solid #63B3ED !important;
-        padding: 10px 15px !important;
-        font-weight: 700 !important;
-        letter-spacing: 0.5px !important;
-        box-shadow: 0 4px 15px rgba(49, 130, 206, 0.4) !important;
-        transition: all 0.3s ease !important;
-        width: 100%;
+        color: #FFFFFF !important; border-radius: 12px !important; border: 1px solid #63B3ED !important;
+        padding: 10px 15px !important; font-weight: 700 !important; letter-spacing: 0.5px !important;
+        box-shadow: 0 4px 15px rgba(49, 130, 206, 0.4) !important; transition: all 0.3s ease !important; width: 100%;
+        font-family: 'Segoe UI', sans-serif !important; /* Mejor legibilidad en botones */
     }
-    
-    /* Efecto Flotante al pasar el mouse para TODOS los botones */
-    div.stButton > button:hover, 
-    div.stDownloadButton > button:hover, 
-    div.stFormSubmitButton > button:hover {
+    div.stButton > button:hover, div.stDownloadButton > button:hover, div.stFormSubmitButton > button:hover {
         background: linear-gradient(135deg, #2B6CB0 0%, #4299E1 100%) !important;
-        box-shadow: 0 6px 20px rgba(99, 179, 237, 0.8) !important;
-        transform: translateY(-4px) !important;
+        box-shadow: 0 6px 20px rgba(99, 179, 237, 0.8) !important; transform: translateY(-4px) !important;
         border: 1px solid #E2E8F0 !important;
     }
 
     /* Recuadros de métricas */
     [data-testid="metric-container"] {
-        background-color: #112240;
-        border: 1px solid #233554;
-        border-radius: 12px;
-        padding: 20px;
-        box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+        background-color: #112240; border: 1px solid #233554; border-radius: 12px;
+        padding: 20px; box-shadow: 0 8px 16px rgba(0,0,0,0.4);
     }
-    [data-testid="metric-container"] label { color: #8892B0 !important; font-size: 18px !important; }
+    [data-testid="metric-container"] label { color: #8892B0 !important; font-size: 18px !important; font-family: 'Segoe UI', sans-serif !important; }
     [data-testid="metric-container"] div { color: #63B3ED !important; font-size: 32px !important; }
 
     /* Entradas de texto */
-    .stTextInput > div > div > input, .stSelectbox > div > div > div {
-        background-color: #112240 !important;
-        color: white !important;
-        border-radius: 8px !important;
+    .stTextInput > div > div > input, .stSelectbox > div > div > div, .stTextArea > div > div > textarea {
+        background-color: #112240 !important; color: white !important; border-radius: 8px !important;
         border: 1px solid #2B6CB0 !important;
     }
     
-    /* Pie de página (Versículo) */
+    /* Pie de página */
     .footer-versiculo {
-        text-align: center;
-        font-size: 18px;
-        font-style: italic;
-        color: #8892B0;
-        margin-top: 60px;
-        padding-top: 20px;
-        border-top: 1px solid #233554;
-        font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
+        text-align: center; font-size: 18px; font-style: italic; color: #8892B0;
+        margin-top: 60px; padding-top: 20px; border-top: 1px solid #233554;
     }
     </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# INICIALIZACIÓN DE DATOS Y ESTADO DE NAVEGACIÓN
+# INICIALIZACIÓN DE DATOS 
 # ==========================================
+columnas_requeridas = [
+    "ID", "Nombre Completo", "DPI", "Gafete", "Teléfono", "Correo", "Dirección", 
+    "Fecha de Nacimiento", "Edad", "Género", 
+    "Estado en Ministerio", "Ministerio", "Rol",
+    "Tipo Vehículo", "Placas", "Marbete Pagado", "Tiene Foto"
+]
+
 if 'miembros_df' not in st.session_state:
-    st.session_state.miembros_df = pd.DataFrame(columns=[
-        "ID", "Nombre Completo", "Teléfono", "Correo", "Dirección", 
-        "Fecha de Nacimiento", "Edad", "Género", 
-        "Estado en Ministerio", "Ministerio", "Rol"
-    ])
+    st.session_state.miembros_df = pd.DataFrame(columns=columnas_requeridas)
+else:
+    # Actualizar dataframe si venimos de una versión anterior del código
+    for col in columnas_requeridas:
+        if col not in st.session_state.miembros_df.columns:
+            st.session_state.miembros_df[col] = ""
+
+if 'notas_db' not in st.session_state:
+    st.session_state.notas_db = []
 
 def calcular_edad(fecha_nacimiento):
     hoy = date.today()
@@ -164,13 +145,13 @@ def calcular_edad(fecha_nacimiento):
 def ir_a(pagina):
     st.session_state.menu_option = pagina
 
-opciones_menu = ["🏠 Inicio", "📊 Dashboard", "🎂 Cumpleaños", "➕ Agregar", "🗑️ Eliminar", "💾 Exportar"]
+opciones_menu = ["🏠 Inicio", "📊 Dashboard", "➕ Agregar", "🚗 Vehículos", "📝 Notas", "📜 Carta Rec.", "🎂 Cumple", "🗑️ Eliminar", "💾 Exportar"]
                  
 if 'menu_option' not in st.session_state:
     st.session_state.menu_option = opciones_menu[0]
 
 # ==========================================
-# BARRA LATERAL (Con la cruz de madera animada)
+# BARRA LATERAL 
 # ==========================================
 st.sidebar.markdown('''
     <svg class="cruz-animada" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
@@ -192,23 +173,28 @@ menu = st.sidebar.radio("Ir a:", opciones_menu, key="menu_option")
 df = st.session_state.miembros_df
 
 # ==========================================
-# FUNCIÓN DEL MENÚ SUPERIOR
+# FUNCIÓN DEL MENÚ SUPERIOR (2 FILAS)
 # ==========================================
 def mostrar_menu_superior():
-    nav1, nav2, nav3, nav4, nav5, nav6 = st.columns(6)
-    with nav1: st.button("🏠 Inicio", on_click=ir_a, args=("🏠 Inicio",), use_container_width=True)
-    with nav2: st.button("📊 Dashboard", on_click=ir_a, args=("📊 Dashboard",), use_container_width=True)
-    with nav3: st.button("🎂 Cumple", on_click=ir_a, args=("🎂 Cumpleaños",), use_container_width=True)
-    with nav4: st.button("➕ Agregar", on_click=ir_a, args=("➕ Agregar",), use_container_width=True)
-    with nav5: st.button("🗑️ Eliminar", on_click=ir_a, args=("🗑️ Eliminar",), use_container_width=True)
-    with nav6: st.button("💾 Exportar", on_click=ir_a, args=("💾 Exportar",), use_container_width=True)
+    st.write("") 
+    r1c1, r1c2, r1c3, r1c4, r1c5 = st.columns(5)
+    with r1c1: st.button("🏠 Inicio", on_click=ir_a, args=("🏠 Inicio",))
+    with r1c2: st.button("📊 Dashboard", on_click=ir_a, args=("📊 Dashboard",))
+    with r1c3: st.button("➕ Agregar", on_click=ir_a, args=("➕ Agregar",))
+    with r1c4: st.button("🚗 Vehículos", on_click=ir_a, args=("🚗 Vehículos",))
+    with r1c5: st.button("📝 Notas", on_click=ir_a, args=("📝 Notas",))
+    
+    r2c1, r2c2, r2c3, r2c4, r2c5 = st.columns(5)
+    with r2c1: st.button("📜 Carta Rec.", on_click=ir_a, args=("📜 Carta Rec.",))
+    with r2c2: st.button("🎂 Cumple", on_click=ir_a, args=("🎂 Cumple",))
+    with r2c3: st.button("🗑️ Eliminar", on_click=ir_a, args=("🗑️ Eliminar",))
+    with r2c4: st.button("💾 Exportar", on_click=ir_a, args=("💾 Exportar",))
     st.write("---")
 
 # ==========================================
 # SECCIÓN 1: INICIO (PORTADA)
 # ==========================================
 if menu == "🏠 Inicio":
-    # Textura formal: Resplandor central + Líneas diagonales elegantes (pinstripe)
     st.markdown("""
         <style>
         .stApp {
@@ -220,7 +206,6 @@ if menu == "🏠 Inicio":
         </style>
     """, unsafe_allow_html=True)
 
-    # AQUÍ ESTÁ EL CAMBIO SOLICITADO
     st.markdown('<p class="titulo-portada">Pastor General José Manuel Rodríguez López</p>', unsafe_allow_html=True)
     st.markdown('<p class="subtitulo-portada">DASHBOARD OFICIAL DE MIEMBROS (IRC)</p>', unsafe_allow_html=True)
     
@@ -230,39 +215,236 @@ if menu == "🏠 Inicio":
             st.image("logo.png", use_container_width=True)
         except:
             st.image("https://images.unsplash.com/photo-1438032005730-c779502df39b?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80", use_container_width=True)
-            st.info("💡 Sube tu archivo 'logo.png' a GitHub.")
     
-    st.markdown("<br>", unsafe_allow_html=True)
     mostrar_menu_superior()
-    
-    st.markdown("<p class='bienvenida'>Bienvenido al sistema moderno de gestión de la congregación.</p>", unsafe_allow_html=True)
+    st.markdown("<p class='bienvenida'>Bienvenido al sistema integral de gestión congregacional.</p>", unsafe_allow_html=True)
 
 # ==========================================
-# SECCIÓN 2: DASHBOARD PRINCIPAL
+# SECCIÓN 2: DASHBOARD PRINCIPAL (CON BUSCADOR)
 # ==========================================
 elif menu == "📊 Dashboard":
     mostrar_menu_superior() 
     st.header("📊 Dashboard de Miembros")
     
     if df.empty:
-        st.warning("No hay miembros registrados aún. Usa el botón '➕ Agregar' del menú superior.")
+        st.warning("No hay miembros registrados aún.")
     else:
         col1, col2, col3, col4 = st.columns(4)
-        col1.metric("👥 Total de Miembros", len(df))
+        col1.metric("👥 Total Miembros", len(df))
         col2.metric("👑 Líderes Activos", len(df[df["Rol"] == "Líder del Ministerio"]))
-        col3.metric("🔥 En Ministerios", len(df[df["Estado en Ministerio"] == "Activo en Ministerio"]))
-        col4.metric("🚶 No Activos / Miembros", len(df[df["Estado en Ministerio"] == "Solo Miembro Normal"]))
+        col3.metric("🚗 Vehículos Registrados", len(df[df["Tipo Vehículo"] != "Ninguno"]))
+        col4.metric("📸 Con Foto", len(df[df["Tiene Foto"] == "Sí"]))
         
         st.write("---")
-        st.subheader("📋 Lista General de la Congregación")
-        st.dataframe(df.drop(columns=["ID"]), use_container_width=True)
+        st.subheader("🔍 Buscar y Filtrar")
+        
+        # BARRA DE BÚSQUEDA
+        busqueda = st.text_input("Ingresa nombre, DPI o número de gafete para buscar...", "")
+        
+        if busqueda:
+            df_mostrar = df[
+                df["Nombre Completo"].astype(str).str.contains(busqueda, case=False, na=False) | 
+                df["DPI"].astype(str).str.contains(busqueda, case=False, na=False) | 
+                df["Gafete"].astype(str).str.contains(busqueda, case=False, na=False)
+            ]
+        else:
+            df_mostrar = df
+
+        st.subheader("📋 Lista de la Congregación")
+        st.dataframe(df_mostrar.drop(columns=["ID"]), use_container_width=True)
 
 # ==========================================
-# SECCIÓN 3: CUMPLEAÑOS DEL MES
+# SECCIÓN 3: AGREGAR MIEMBRO
 # ==========================================
-elif menu == "🎂 Cumpleaños":
+elif menu == "➕ Agregar":
     mostrar_menu_superior()
-    st.header("🎂 Cumpleañeros de este Mes")
+    st.header("➕ Registro de Nuevo Miembro")
+    
+    with st.form("form_nuevo_miembro", clear_on_submit=True):
+        st.subheader("Datos Personales")
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            nombre = st.text_input("Nombre Completo *")
+            dpi = st.text_input("DPI")
+        with col2:
+            fecha_nac = st.date_input("Fecha de Nac", min_value=date(1920, 1, 1), max_value=date.today())
+            gafete = st.text_input("N° de Gafete")
+        with col3:
+            genero = st.selectbox("Género", ["Masculino", "Femenino"])
+            foto = st.file_uploader("Subir Foto", type=['png', 'jpg', 'jpeg'])
+            
+        st.subheader("Contacto y Control Automotriz")
+        col4, col5, col6 = st.columns(3)
+        with col4:
+            telefono = st.text_input("Teléfono *")
+            correo = st.text_input("Correo")
+            direccion = st.text_input("Dirección")
+        with col5:
+            vehiculo = st.selectbox("Tipo de Vehículo", ["Ninguno", "Automóvil", "Motocicleta", "Microbús", "Otro"])
+            placas = st.text_input("Placas (Si aplica)")
+        with col6:
+            marbete = st.selectbox("Marbete de Parqueo", ["No Aplica", "Pendiente", "Pagado/Vigente", "Cancelado"])
+
+        st.subheader("Participación en la Iglesia")
+        col7, col8 = st.columns(2)
+        with col7:
+            ministerios = ["Ninguno", "Alabanza", "Intercesión", "Diáconos (Servidores)", "Escuela Dominical", "Evangelismo", "Danza"]
+            ministerio = st.selectbox("Ministerio", ministerios)
+        with col8:
+            rol = st.selectbox("Rol", ["No Aplica", "Miembro del Ministerio", "Líder del Ministerio"])
+
+        st.write("* Campos obligatorios")
+        submit = st.form_submit_button("💾 Guardar Registro Completo")
+        
+        if submit:
+            if nombre == "" or telefono == "":
+                st.error("Por favor, llena Nombre y Teléfono.")
+            else:
+                edad = calcular_edad(fecha_nac)
+                estado_ministerio = "Activo en Ministerio" if ministerio != "Ninguno" else "Solo Miembro"
+                rol_final = rol if ministerio != "Ninguno" else "No Aplica"
+                tiene_foto = "Sí" if foto is not None else "No"
+                
+                nuevo_registro = {
+                    "ID": len(df) + 1, "Nombre Completo": nombre, "DPI": dpi, "Gafete": gafete, 
+                    "Teléfono": telefono, "Correo": correo, "Dirección": direccion, 
+                    "Fecha de Nacimiento": fecha_nac, "Edad": edad, "Género": genero,
+                    "Estado en Ministerio": estado_ministerio, "Ministerio": ministerio, "Rol": rol_final,
+                    "Tipo Vehículo": vehiculo, "Placas": placas, "Marbete Pagado": marbete, "Tiene Foto": tiene_foto
+                }
+                
+                st.session_state.miembros_df = pd.concat([df, pd.DataFrame([nuevo_registro])], ignore_index=True)
+                st.success(f"✅ ¡{nombre} registrado con éxito!")
+
+# ==========================================
+# SECCIÓN 4: VEHÍCULOS
+# ==========================================
+elif menu == "🚗 Vehículos":
+    mostrar_menu_superior()
+    st.header("🚗 Control de Vehículos y Marbetes")
+    
+    if df.empty:
+        st.info("No hay datos en el sistema.")
+    else:
+        df_vehiculos = df[df["Tipo Vehículo"] != "Ninguno"][["Nombre Completo", "DPI", "Tipo Vehículo", "Placas", "Marbete Pagado"]]
+        
+        if df_vehiculos.empty:
+            st.warning("Ningún miembro tiene vehículos registrados actualmente.")
+        else:
+            col1, col2 = st.columns(2)
+            col1.metric("Total Vehículos Registrados", len(df_vehiculos))
+            col2.metric("Marbetes Vigentes", len(df_vehiculos[df_vehiculos["Marbete Pagado"] == "Pagado/Vigente"]))
+            
+            st.dataframe(df_vehiculos, use_container_width=True)
+
+# ==========================================
+# SECCIÓN 5: NOTAS
+# ==========================================
+elif menu == "📝 Notas":
+    mostrar_menu_superior()
+    st.header("📝 Libreta de Notas Pastorales / Administrativas")
+    
+    with st.form("form_notas", clear_on_submit=True):
+        titulo_nota = st.text_input("Título de la Nota")
+        contenido_nota = st.text_area("Contenido / Observaciones", height=150)
+        btn_nota = st.form_submit_button("💾 Guardar Nota")
+        
+        if btn_nota and titulo_nota != "":
+            st.session_state.notas_db.append({
+                "Fecha": datetime.now().strftime("%Y-%m-%d %H:%M"),
+                "Título": titulo_nota,
+                "Contenido": contenido_nota
+            })
+            st.success("Nota guardada correctamente.")
+            
+    st.write("---")
+    st.subheader("📚 Notas Guardadas")
+    
+    if len(st.session_state.notas_db) == 0:
+        st.info("No hay notas guardadas aún.")
+    else:
+        for i, nota in enumerate(reversed(st.session_state.notas_db)):
+            with st.expander(f"📌 {nota['Título']} ({nota['Fecha']})"):
+                st.write(nota['Contenido'])
+
+# ==========================================
+# SECCIÓN 6: CARTA DE RECOMENDACIÓN
+# ==========================================
+elif menu == "📜 Carta Rec.":
+    mostrar_menu_superior()
+    st.header("📜 Generador de Carta de Recomendación")
+    
+    if df.empty:
+        st.warning("No hay miembros registrados para generar cartas.")
+    else:
+        opciones_miembros = df['Nombre Completo'].tolist()
+        miembro_seleccionado = st.selectbox("Seleccione el Miembro:", opciones_miembros)
+        motivo = st.text_input("Dirigida a (Ej: A quien corresponda, Empresa X, etc.)", "A quien corresponda")
+        
+        if st.button("📄 Generar PDF"):
+            datos_miembro = df[df['Nombre Completo'] == miembro_seleccionado].iloc[0]
+            dpi_texto = str(datos_miembro['DPI']) if str(datos_miembro['DPI']) != "" else "[DPI NO REGISTRADO]"
+            
+            # Crear PDF
+            pdf = FPDF()
+            pdf.add_page()
+            
+            # Usaremos tipografía Times (la más parecida a Bembo que soporta FPDF por defecto)
+            pdf.set_font("Times", 'B', 18)
+            pdf.cell(0, 15, "IGLESIA RESTAURACIÓN CRISTIANA", ln=True, align='C')
+            pdf.set_font("Times", 'B', 14)
+            pdf.cell(0, 10, "CARTA DE RECOMENDACIÓN", ln=True, align='C')
+            pdf.ln(10)
+            
+            # Fecha
+            pdf.set_font("Times", '', 12)
+            fecha_hoy = date.today().strftime("%d de %B de %Y")
+            pdf.cell(0, 10, f"Fecha: {fecha_hoy}", ln=True, align='R')
+            pdf.ln(10)
+            
+            # Destinatario
+            pdf.set_font("Times", 'B', 12)
+            pdf.cell(0, 10, motivo.upper() + ":", ln=True, align='L')
+            pdf.ln(5)
+            
+            # Cuerpo
+            pdf.set_font("Times", '', 12)
+            texto_cuerpo = (
+                f"Por este medio hacemos constar y extendemos la presente recomendación a favor de "
+                f"{miembro_seleccionado}, quien se identifica con el Documento Personal de Identificación (DPI) "
+                f"número {dpi_texto}. "
+                f"\n\nDurante el tiempo de conocerle en nuestra congregación, ha demostrado ser una persona "
+                f"responsable, honorable y de sólidos principios cristianos y morales, participando activamente "
+                f"en nuestras actividades y mostrando un comportamiento ejemplar."
+                f"\n\nPor lo anterior, no tenemos ningún inconveniente en recomendarle ampliamente para los fines "
+                f"que considere convenientes."
+            )
+            pdf.multi_cell(0, 8, texto_cuerpo.encode('latin-1', 'ignore').decode('latin-1'))
+            pdf.ln(25)
+            
+            # Firmas
+            pdf.cell(0, 8, "_________________________________________", ln=True, align='C')
+            pdf.set_font("Times", 'B', 12)
+            pdf.cell(0, 8, "Pastor General José Manuel Rodríguez López", ln=True, align='C')
+            pdf.set_font("Times", '', 11)
+            pdf.cell(0, 8, "Iglesia Restauración Cristiana (IRC)", ln=True, align='C')
+            pdf.cell(0, 8, "(Firma y Sello)", ln=True, align='C')
+            
+            # Generar descarga
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+                pdf.output(tmp.name)
+                with open(tmp.name, "rb") as f:
+                    pdf_bytes = f.read()
+            
+            st.success("Carta generada con éxito.")
+            st.download_button("🟥 Descargar Carta PDF", data=pdf_bytes, file_name=f"Recomendacion_{miembro_seleccionado.replace(' ', '_')}.pdf", mime="application/pdf", use_container_width=True)
+
+# ==========================================
+# SECCIÓN 7: CUMPLEAÑOS
+# ==========================================
+elif menu == "🎂 Cumple":
+    mostrar_menu_superior()
+    st.header("🎂 Cumpleañeros del Mes")
     mes_actual = date.today().month
     meses_nombres = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
     
@@ -281,57 +463,7 @@ elif menu == "🎂 Cumpleaños":
         st.warning("No hay datos registrados.")
 
 # ==========================================
-# SECCIÓN 4: AGREGAR MIEMBRO
-# ==========================================
-elif menu == "➕ Agregar":
-    mostrar_menu_superior()
-    st.header("➕ Registro de Nuevo Miembro")
-    
-    with st.form("form_nuevo_miembro", clear_on_submit=True):
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            nombre = st.text_input("Nombre Completo *")
-            telefono = st.text_input("Número de Teléfono *")
-            correo = st.text_input("Correo Electrónico (Opcional)")
-            direccion = st.text_input("Dirección (Opcional)")
-            genero = st.selectbox("Género", ["Masculino", "Femenino"])
-            
-        with col2:
-            fecha_nac = st.date_input("Fecha de Nacimiento *", min_value=date(1920, 1, 1), max_value=date.today())
-            
-            st.write("### Participación en la Iglesia")
-            ministerios = ["Ninguno", "Alabanza", "Intercesión", "Diáconos (Servidores)", "Docentes de Escuela Dominical", "Evangelismo", "Danza"]
-            ministerio = st.selectbox("Seleccione el Ministerio", ministerios)
-            
-            rol = st.selectbox("Rol en el Ministerio", ["No Aplica", "Miembro del Ministerio", "Líder del Ministerio"])
-
-        st.write("* Campos obligatorios")
-        submit = st.form_submit_button("💾 Guardar Miembro")
-        
-        if submit:
-            if nombre == "" or telefono == "":
-                st.error("Por favor, llena los campos obligatorios (Nombre y Teléfono).")
-            else:
-                edad = calcular_edad(fecha_nac)
-                nuevo_id = len(df) + 1
-                
-                estado_ministerio = "Activo en Ministerio" if ministerio != "Ninguno" else "Solo Miembro Normal"
-                rol_final = rol if ministerio != "Ninguno" else "No Aplica"
-                
-                nuevo_registro = {
-                    "ID": nuevo_id, "Nombre Completo": nombre, "Teléfono": telefono, "Correo": correo,
-                    "Dirección": direccion, "Fecha de Nacimiento": fecha_nac, "Edad": edad, "Género": genero,
-                    "Estado en Ministerio": estado_ministerio,
-                    "Ministerio": ministerio,
-                    "Rol": rol_final
-                }
-                
-                st.session_state.miembros_df = pd.concat([df, pd.DataFrame([nuevo_registro])], ignore_index=True)
-                st.success(f"✅ ¡{nombre} ha sido registrado exitosamente!")
-
-# ==========================================
-# SECCIÓN 5: ELIMINAR MIEMBRO
+# SECCIÓN 8: ELIMINAR MIEMBRO
 # ==========================================
 elif menu == "🗑️ Eliminar":
     mostrar_menu_superior()
@@ -340,18 +472,33 @@ elif menu == "🗑️ Eliminar":
     if df.empty:
         st.info("No hay miembros para eliminar.")
     else:
-        st.warning("⚠️ Atención: Al eliminar un miembro, sus datos se borrarán del sistema actual.")
-        opciones_eliminar = df['ID'].astype(str) + " - " + df['Nombre Completo']
-        miembro_a_eliminar = st.selectbox("Selecciona el miembro:", opciones_eliminar)
+        st.warning("⚠️ Atención: Al eliminar un miembro, sus datos se borrarán permanentemente.")
         
-        if st.button("❌ Eliminar Definitivamente"):
-            id_eliminar = int(miembro_a_eliminar.split(" - ")[0])
-            st.session_state.miembros_df = df[df["ID"] != id_eliminar]
-            st.success("Miembro eliminado correctamente.")
-            st.rerun() 
+        # BARRA DE BÚSQUEDA PARA ELIMINAR
+        busqueda_eliminar = st.text_input("🔍 Buscar miembro a eliminar (Nombre o DPI)...", "")
+        
+        if busqueda_eliminar:
+            df_filtro = df[
+                df["Nombre Completo"].astype(str).str.contains(busqueda_eliminar, case=False, na=False) | 
+                df["DPI"].astype(str).str.contains(busqueda_eliminar, case=False, na=False)
+            ]
+        else:
+            df_filtro = df
+            
+        if not df_filtro.empty:
+            opciones_eliminar = df_filtro['ID'].astype(str) + " - " + df_filtro['Nombre Completo']
+            miembro_a_eliminar = st.selectbox("Selecciona el miembro a eliminar:", opciones_eliminar)
+            
+            if st.button("❌ Eliminar Definitivamente"):
+                id_eliminar = int(miembro_a_eliminar.split(" - ")[0])
+                st.session_state.miembros_df = df[df["ID"] != id_eliminar]
+                st.success("Miembro eliminado correctamente.")
+                st.rerun() 
+        else:
+            st.info("No se encontraron coincidencias en tu búsqueda.")
 
 # ==========================================
-# SECCIÓN 6: EXPORTAR DATOS (EXCEL / PDF)
+# SECCIÓN 9: EXPORTAR DATOS
 # ==========================================
 elif menu == "💾 Exportar":
     mostrar_menu_superior()
@@ -360,54 +507,11 @@ elif menu == "💾 Exportar":
     if df.empty:
         st.warning("No hay datos para exportar.")
     else:
-        st.dataframe(df.drop(columns=["ID"]))
-        
         buffer_excel = io.BytesIO()
         with pd.ExcelWriter(buffer_excel, engine='openpyxl') as writer:
             df.drop(columns=["ID"]).to_excel(writer, index=False, sheet_name='Miembros IRC')
-            
-        pdf = FPDF(orientation='L') 
-        pdf.add_page()
-        pdf.set_font("Arial", 'B', 16)
-        pdf.cell(0, 10, "IGLESIA RESTAURACION CRISTIANA (IRC)", ln=True, align='C')
-        pdf.set_font("Arial", 'I', 12)
-        pdf.cell(0, 10, "Directorio Oficial de Miembros", ln=True, align='C')
-        pdf.ln(5)
         
-        pdf.set_font("Arial", 'B', 10)
-        anchos = [70, 30, 20, 75, 75] 
-        encabezados = ["Nombre", "Telefono", "Edad", "Ministerio", "Rol"]
-        for i, col in enumerate(encabezados):
-            pdf.cell(anchos[i], 10, col, border=1, align='C')
-        pdf.ln()
-        
-        pdf.set_font("Arial", '', 9)
-        for _, row in df.iterrows():
-            nombre = str(row['Nombre Completo']).encode('latin-1', 'ignore').decode('latin-1')[:35]
-            tel = str(row['Teléfono']).encode('latin-1', 'ignore').decode('latin-1')
-            edad = str(row['Edad'])
-            minis = str(row['Ministerio']).encode('latin-1', 'ignore').decode('latin-1')[:35]
-            rol = str(row['Rol']).encode('latin-1', 'ignore').decode('latin-1')[:35]
-            
-            pdf.cell(anchos[0], 10, nombre, border=1)
-            pdf.cell(anchos[1], 10, tel, border=1, align='C')
-            pdf.cell(anchos[2], 10, edad, border=1, align='C')
-            pdf.cell(anchos[3], 10, minis, border=1)
-            pdf.cell(anchos[4], 10, rol, border=1)
-            pdf.ln()
-            
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
-            pdf.output(tmp.name)
-            with open(tmp.name, "rb") as f:
-                pdf_bytes = f.read()
-        
-        st.write("---")
-        col1, col2, col3 = st.columns([1, 1, 1])
-        
-        with col1:
-            st.download_button("🟩 Descargar Excel", data=buffer_excel.getvalue(), file_name=f"Miembros_IRC_{date.today()}.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
-        with col3:
-            st.download_button("🟥 Descargar PDF", data=pdf_bytes, file_name=f"Miembros_IRC_{date.today()}.pdf", mime="application/pdf", use_container_width=True)
+        st.download_button("🟩 Descargar Directorio Completo en Excel", data=buffer_excel.getvalue(), file_name=f"Directorio_IRC_{date.today()}.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 # ==========================================
 # FOOTER (VERSÍCULO)
