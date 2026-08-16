@@ -11,7 +11,7 @@ from fpdf import FPDF
 # ==========================================
 st.set_page_config(page_title="Dashboard IRC", page_icon="✝️", layout="wide")
 
-# CSS personalizado para Modo Oscuro/Elegante, Fuentes Bembo Book, y Botones
+# CSS personalizado 
 st.markdown("""
     <style>
     /* Importar fuente serif elegante de respaldo */
@@ -28,13 +28,13 @@ st.markdown("""
         color: #E2E8F0; 
     }
 
-    /* Título principal - CORREGIDO PARA EVITAR DISTORSIÓN */
+    /* Título principal (SIN DISTORSIÓN) */
     .titulo-portada {
         font-size: 55px; 
         font-weight: 700;
         text-align: center;
-        color: #F7FAFC; /* Color sólido blanco puro/azulado */
-        text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7); /* Sombra elegante para dar volumen */
+        color: #FFFFFF; 
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); 
         margin-bottom: 0px;
         padding-bottom: 10px;
         line-height: 1.2;
@@ -75,9 +75,23 @@ st.markdown("""
         margin: 0 auto; margin-bottom: 20px;
     }
 
+    /* ESTILO RESTAURADO: Logo Circular y Flotante */
     [data-testid="stImage"] img {
-        border-radius: 15px; /* Bordes suaves para la foto de perfil */
+        border-radius: 50%; 
         box-shadow: 0 10px 30px rgba(99, 179, 237, 0.2);
+        border: 4px solid #2B6CB0; 
+        object-fit: cover; 
+        animation: float 3.5s ease-in-out infinite;
+    }
+
+    /* NUEVO ESTILO: Fotos de Perfil (Cuadradas, bordes suaves, sin flotar) */
+    .foto-perfil {
+        border-radius: 12px; 
+        width: 100%; 
+        max-width: 350px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+        border: 2px solid #63B3ED;
+        object-fit: cover;
     }
 
     /* Estilo para TODOS los botones */
@@ -129,7 +143,6 @@ columnas_requeridas = [
 if 'miembros_df' not in st.session_state:
     st.session_state.miembros_df = pd.DataFrame(columns=columnas_requeridas)
 else:
-    # Actualizar dataframe si venimos de una versión anterior del código
     for col in columnas_requeridas:
         if col not in st.session_state.miembros_df.columns:
             st.session_state.miembros_df[col] = ""
@@ -172,7 +185,7 @@ menu = st.sidebar.radio("Ir a:", opciones_menu, key="menu_option")
 df = st.session_state.miembros_df
 
 # ==========================================
-# FUNCIÓN DEL MENÚ SUPERIOR (2 FILAS)
+# FUNCIÓN DEL MENÚ SUPERIOR 
 # ==========================================
 def mostrar_menu_superior():
     st.write("") 
@@ -219,7 +232,7 @@ if menu == "🏠 Inicio":
     st.markdown("<p class='bienvenida'>Bienvenido al sistema integral de gestión congregacional.</p>", unsafe_allow_html=True)
 
 # ==========================================
-# SECCIÓN 2: DASHBOARD PRINCIPAL (CON BUSCADOR Y FOTOS)
+# SECCIÓN 2: DASHBOARD PRINCIPAL 
 # ==========================================
 elif menu == "📊 Dashboard":
     mostrar_menu_superior() 
@@ -248,12 +261,11 @@ elif menu == "📊 Dashboard":
         else:
             df_mostrar = df
 
-        # ================= PESTAÑAS PARA VER TABLA O PERFILES CON FOTO =================
+        # ================= PESTAÑAS =================
         tab1, tab2 = st.tabs(["📋 Vista de Tabla General", "👤 Ver Perfiles y Fotos"])
         
         with tab1:
             st.write("Datos generales de la congregación:")
-            # Ocultamos la columna Foto Base64 para que la tabla no se trabe
             st.dataframe(df_mostrar.drop(columns=["ID", "Foto Base64"]), use_container_width=True)
             
         with tab2:
@@ -268,10 +280,13 @@ elif menu == "📊 Dashboard":
                     col_img, col_info = st.columns([1, 2])
                     
                     with col_img:
-                        if perfil["Foto Base64"] and perfil["Foto Base64"] != "":
-                            # Decodificamos y mostramos la foto
-                            img_data = base64.b64decode(perfil["Foto Base64"])
-                            st.image(img_data, caption=perfil["Nombre Completo"], use_container_width=True)
+                        if pd.notna(perfil["Foto Base64"]) and perfil["Foto Base64"] != "":
+                            try:
+                                # Aquí usamos el HTML especial para que la foto de perfil no tome la animación del logo
+                                html_foto = f'<img src="data:image/jpeg;base64,{perfil["Foto Base64"]}" class="foto-perfil">'
+                                st.markdown(html_foto, unsafe_allow_html=True)
+                            except Exception as e:
+                                st.error("Error al cargar la imagen.")
                         else:
                             st.info("Este miembro no tiene fotografía registrada.")
                             
@@ -335,7 +350,6 @@ elif menu == "➕ Agregar":
             if nombre == "" or telefono == "":
                 st.error("Por favor, llena Nombre y Teléfono.")
             else:
-                # Procesar Fotografía a texto (Base64)
                 foto_b64 = ""
                 tiene_foto = "No"
                 if foto is not None:
@@ -428,7 +442,6 @@ elif menu == "📜 Carta Rec.":
             datos_miembro = df[df['Nombre Completo'] == miembro_seleccionado].iloc[0]
             dpi_texto = str(datos_miembro['DPI']) if str(datos_miembro['DPI']) != "" else "[DPI NO REGISTRADO]"
             
-            # Crear PDF
             pdf = FPDF()
             pdf.add_page()
             
@@ -545,7 +558,6 @@ elif menu == "💾 Exportar":
     else:
         buffer_excel = io.BytesIO()
         with pd.ExcelWriter(buffer_excel, engine='openpyxl') as writer:
-            # Exportamos todo menos la Foto Base64 (que es un código larguísimo y arruinaría el Excel) y el ID interno
             df.drop(columns=["ID", "Foto Base64"]).to_excel(writer, index=False, sheet_name='Miembros IRC')
         
         st.download_button("🟩 Descargar Directorio Completo en Excel", data=buffer_excel.getvalue(), file_name=f"Directorio_IRC_{date.today()}.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
