@@ -17,7 +17,7 @@ st.markdown("""
     /* Importar fuente serif elegante de respaldo */
     @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;700&display=swap');
 
-    /* Aplicar Bembo Book, EXCLUYENDO 'span' para no arruinar los íconos internos de Streamlit (el error de uploadUpload) */
+    /* Aplicar Bembo Book, EXCLUYENDO 'span' para no arruinar los íconos internos de Streamlit */
     html, body, .stApp, p, h1, h2, h3, label, button, input, select, textarea, table, th, td {
         font-family: 'Bembo Book', 'EB Garamond', 'Times New Roman', serif !important;
     }
@@ -392,7 +392,7 @@ elif menu == "➕ Agregar":
                 st.success(f"✅ ¡{nombre} registrado con éxito!")
 
 # ==========================================
-# SECCIÓN 4: VEHÍCULOS
+# SECCIÓN 4: VEHÍCULOS (MODIFICADA CON FILTRO)
 # ==========================================
 elif menu == "🚗 Vehículos":
     mostrar_menu_superior()
@@ -406,11 +406,25 @@ elif menu == "🚗 Vehículos":
         if df_vehiculos.empty:
             st.warning("Ningún miembro tiene vehículos registrados actualmente.")
         else:
-            col1, col2 = st.columns(2)
-            col1.metric("Total Vehículos Registrados", len(df_vehiculos))
-            col2.metric("Marbetes Vigentes", len(df_vehiculos[df_vehiculos["Marbete Pagado"] == "Pagado/Vigente"]))
+            # Añadimos una columna más para las métricas de "Pendientes"
+            col1, col2, col3 = st.columns(3)
+            col1.metric("Total Vehículos", len(df_vehiculos))
+            col2.metric("Marbetes Pagados", len(df_vehiculos[df_vehiculos["Marbete Pagado"] == "Pagado/Vigente"]))
+            col3.metric("Marbetes Pendientes", len(df_vehiculos[df_vehiculos["Marbete Pagado"] == "Pendiente"]))
             
-            st.dataframe(df_vehiculos, use_container_width=True)
+            st.write("---")
+            st.subheader("🔍 Buscar por Estado de Pago")
+            
+            # Filtro interactivo
+            opciones_filtro = ["Todos", "Pagado/Vigente", "Pendiente", "Cancelado", "No Aplica"]
+            filtro = st.selectbox("Selecciona el estado del marbete:", opciones_filtro)
+            
+            if filtro != "Todos":
+                df_mostrar_vehiculos = df_vehiculos[df_vehiculos["Marbete Pagado"] == filtro]
+            else:
+                df_mostrar_vehiculos = df_vehiculos
+                
+            st.dataframe(df_mostrar_vehiculos, use_container_width=True, hide_index=True)
 
 # ==========================================
 # SECCIÓN 5: NOTAS
