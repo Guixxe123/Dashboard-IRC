@@ -4,6 +4,7 @@ from datetime import date, datetime
 import io
 import tempfile
 import base64
+import os
 from fpdf import FPDF
 
 # ==========================================
@@ -394,7 +395,7 @@ elif menu == "➕ Agregar":
                 st.success(f"✅ ¡{nombre} registrado con éxito!")
 
 # ==========================================
-# SECCIÓN 4: VEHÍCULOS (MODIFICADA CON FILTRO)
+# SECCIÓN 4: VEHÍCULOS (MODIFICADA CON FILTRO Y PDF)
 # ==========================================
 elif menu == "🚗 Vehículos":
     mostrar_menu_superior()
@@ -427,6 +428,52 @@ elif menu == "🚗 Vehículos":
                 df_mostrar_vehiculos = df_vehiculos
                 
             st.dataframe(df_mostrar_vehiculos, use_container_width=True, hide_index=True)
+            
+            # --- NUEVO: Exportar a PDF Vehículos ---
+            st.write("---")
+            if not df_mostrar_vehiculos.empty:
+                if st.button("📄 Exportar Reporte PDF"):
+                    pdf = FPDF()
+                    pdf.add_page()
+                    pdf.set_font("Times", 'B', 16)
+                    pdf.cell(0, 10, "Reporte de Vehículos y Marbetes - IRC", ln=True, align='C')
+                    pdf.set_font("Times", '', 10)
+                    pdf.cell(0, 10, f"Fecha de reporte: {date.today().strftime('%d/%m/%Y')} | Filtro: {filtro}", ln=True, align='C')
+                    pdf.ln(5)
+                    
+                    cols_pdf = ["Nombre Completo", "DPI", "Tipo Vehículo", "Placas", "Marbete Pagado"]
+                    col_widths = [60, 35, 30, 30, 35]
+                    
+                    pdf.set_font("Times", 'B', 10)
+                    for i, col_name in enumerate(cols_pdf):
+                        pdf.cell(col_widths[i], 10, col_name, border=1, align='C')
+                    pdf.ln()
+                    
+                    pdf.set_font("Times", '', 9)
+                    for index, row in df_mostrar_vehiculos.iterrows():
+                        nom = str(row.get("Nombre Completo", "")).encode('latin-1', 'replace').decode('latin-1')[:35]
+                        dpi_v = str(row.get("DPI", "")).encode('latin-1', 'replace').decode('latin-1')[:15]
+                        veh = str(row.get("Tipo Vehículo", "")).encode('latin-1', 'replace').decode('latin-1')[:15]
+                        pla = str(row.get("Placas", "")).encode('latin-1', 'replace').decode('latin-1')[:15]
+                        mar = str(row.get("Marbete Pagado", "")).encode('latin-1', 'replace').decode('latin-1')[:20]
+                        
+                        valores = [nom, dpi_v, veh, pla, mar]
+                        for i, val in enumerate(valores):
+                            pdf.cell(col_widths[i], 10, val, border=1)
+                        pdf.ln()
+                        
+                    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+                        pdf.output(tmp.name)
+                        with open(tmp.name, "rb") as f:
+                            pdf_bytes = f.read()
+
+                    st.download_button(
+                        "🟥 Descargar Reporte PDF", 
+                        data=pdf_bytes, 
+                        file_name=f"Reporte_Vehiculos_IRC_{date.today()}.pdf", 
+                        mime="application/pdf",
+                        use_container_width=True
+                    )
 
 # ==========================================
 # SECCIÓN 5: NOTAS
@@ -479,6 +526,11 @@ elif menu == "📜 Carta Rec.":
             pdf = FPDF()
             pdf.add_page()
             
+            # --- Añadir Logo en Esquina Superior Derecha si el archivo existe ---
+            if os.path.exists("logo.png"):
+                # (x=165 para alinear a la derecha, y=10 para la parte superior, w=30 ajusta el ancho a 30mm)
+                pdf.image("logo.png", x=165, y=10, w=30)
+            
             pdf.set_font("Times", 'B', 18)
             pdf.cell(0, 15, "IGLESIA RESTAURACIÓN CRISTIANA", ln=True, align='C')
             pdf.set_font("Times", 'B', 14)
@@ -513,7 +565,7 @@ elif menu == "📜 Carta Rec.":
             pdf.cell(0, 8, "Pastor General José Manuel Rodríguez López", ln=True, align='C')
             pdf.set_font("Times", '', 11)
             pdf.cell(0, 8, "Iglesia Restauración Cristiana (IRC)", ln=True, align='C')
-            pdf.cell(0, 8, "(Firma y Sello)", ln=True, align='C')
+            # TEXTO (Firma y Sello) ELIMINADO
             
             with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
                 pdf.output(tmp.name)
