@@ -3,6 +3,7 @@ import pandas as pd
 from datetime import date, datetime
 import io
 import tempfile
+import base64
 from fpdf import FPDF
 
 # ==========================================
@@ -10,7 +11,7 @@ from fpdf import FPDF
 # ==========================================
 st.set_page_config(page_title="Dashboard IRC", page_icon="✝️", layout="wide")
 
-# CSS personalizado para Modo Oscuro/Elegante, Animaciones, Fuentes Bembo Book, Botones y Celulares
+# CSS personalizado para Modo Oscuro/Elegante, Fuentes Bembo Book, y Botones
 st.markdown("""
     <style>
     /* Importar fuente serif elegante de respaldo */
@@ -27,14 +28,13 @@ st.markdown("""
         color: #E2E8F0; 
     }
 
-    /* Título principal */
+    /* Título principal - CORREGIDO PARA EVITAR DISTORSIÓN */
     .titulo-portada {
         font-size: 55px; 
         font-weight: 700;
         text-align: center;
-        background: -webkit-linear-gradient(45deg, #63B3ED, #90CDF4, #E2E8F0);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        color: #F7FAFC; /* Color sólido blanco puro/azulado */
+        text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7); /* Sombra elegante para dar volumen */
         margin-bottom: 0px;
         padding-bottom: 10px;
         line-height: 1.2;
@@ -49,7 +49,7 @@ st.markdown("""
         margin-bottom: 30px;
         letter-spacing: 2px;
         text-transform: uppercase;
-        font-family: 'Segoe UI', sans-serif !important; /* Mantenemos subtitulo legible */
+        font-family: 'Segoe UI', sans-serif !important; 
     }
     
     /* Adaptación para pantallas de Celular */
@@ -75,10 +75,9 @@ st.markdown("""
         margin: 0 auto; margin-bottom: 20px;
     }
 
-    /* Logo Circular */
     [data-testid="stImage"] img {
-        border-radius: 50%; box-shadow: 0 10px 30px rgba(99, 179, 237, 0.2);
-        border: 4px solid #2B6CB0; object-fit: cover; animation: float 3.5s ease-in-out infinite;
+        border-radius: 15px; /* Bordes suaves para la foto de perfil */
+        box-shadow: 0 10px 30px rgba(99, 179, 237, 0.2);
     }
 
     /* Estilo para TODOS los botones */
@@ -87,7 +86,7 @@ st.markdown("""
         color: #FFFFFF !important; border-radius: 12px !important; border: 1px solid #63B3ED !important;
         padding: 10px 15px !important; font-weight: 700 !important; letter-spacing: 0.5px !important;
         box-shadow: 0 4px 15px rgba(49, 130, 206, 0.4) !important; transition: all 0.3s ease !important; width: 100%;
-        font-family: 'Segoe UI', sans-serif !important; /* Mejor legibilidad en botones */
+        font-family: 'Segoe UI', sans-serif !important;
     }
     div.stButton > button:hover, div.stDownloadButton > button:hover, div.stFormSubmitButton > button:hover {
         background: linear-gradient(135deg, #2B6CB0 0%, #4299E1 100%) !important;
@@ -118,13 +117,13 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# INICIALIZACIÓN DE DATOS 
+# INICIALIZACIÓN DE DATOS Y COLUMNAS
 # ==========================================
 columnas_requeridas = [
     "ID", "Nombre Completo", "DPI", "Gafete", "Teléfono", "Correo", "Dirección", 
     "Fecha de Nacimiento", "Edad", "Género", 
     "Estado en Ministerio", "Ministerio", "Rol",
-    "Tipo Vehículo", "Placas", "Marbete Pagado", "Tiene Foto"
+    "Tipo Vehículo", "Placas", "Marbete Pagado", "Tiene Foto", "Foto Base64"
 ]
 
 if 'miembros_df' not in st.session_state:
@@ -220,7 +219,7 @@ if menu == "🏠 Inicio":
     st.markdown("<p class='bienvenida'>Bienvenido al sistema integral de gestión congregacional.</p>", unsafe_allow_html=True)
 
 # ==========================================
-# SECCIÓN 2: DASHBOARD PRINCIPAL (CON BUSCADOR)
+# SECCIÓN 2: DASHBOARD PRINCIPAL (CON BUSCADOR Y FOTOS)
 # ==========================================
 elif menu == "📊 Dashboard":
     mostrar_menu_superior() 
@@ -238,7 +237,6 @@ elif menu == "📊 Dashboard":
         st.write("---")
         st.subheader("🔍 Buscar y Filtrar")
         
-        # BARRA DE BÚSQUEDA
         busqueda = st.text_input("Ingresa nombre, DPI o número de gafete para buscar...", "")
         
         if busqueda:
@@ -250,8 +248,45 @@ elif menu == "📊 Dashboard":
         else:
             df_mostrar = df
 
-        st.subheader("📋 Lista de la Congregación")
-        st.dataframe(df_mostrar.drop(columns=["ID"]), use_container_width=True)
+        # ================= PESTAÑAS PARA VER TABLA O PERFILES CON FOTO =================
+        tab1, tab2 = st.tabs(["📋 Vista de Tabla General", "👤 Ver Perfiles y Fotos"])
+        
+        with tab1:
+            st.write("Datos generales de la congregación:")
+            # Ocultamos la columna Foto Base64 para que la tabla no se trabe
+            st.dataframe(df_mostrar.drop(columns=["ID", "Foto Base64"]), use_container_width=True)
+            
+        with tab2:
+            st.write("Selecciona un miembro para ver su fotografía e información detallada:")
+            if not df_mostrar.empty:
+                miembro_seleccionado = st.selectbox("Seleccione el Miembro:", df_mostrar["Nombre Completo"].tolist())
+                
+                if miembro_seleccionado:
+                    perfil = df_mostrar[df_mostrar["Nombre Completo"] == miembro_seleccionado].iloc[0]
+                    
+                    st.markdown("### 📌 Ficha de Miembro")
+                    col_img, col_info = st.columns([1, 2])
+                    
+                    with col_img:
+                        if perfil["Foto Base64"] and perfil["Foto Base64"] != "":
+                            # Decodificamos y mostramos la foto
+                            img_data = base64.b64decode(perfil["Foto Base64"])
+                            st.image(img_data, caption=perfil["Nombre Completo"], use_container_width=True)
+                        else:
+                            st.info("Este miembro no tiene fotografía registrada.")
+                            
+                    with col_info:
+                        st.markdown(f"**Nombre:** {perfil['Nombre Completo']}")
+                        st.markdown(f"**DPI:** {perfil['DPI']}")
+                        st.markdown(f"**Gafete N°:** {perfil['Gafete']}")
+                        st.markdown(f"**Teléfono:** {perfil['Teléfono']}")
+                        st.markdown(f"**Edad:** {perfil['Edad']} años")
+                        st.markdown(f"**Ministerio:** {perfil['Ministerio']} ({perfil['Rol']})")
+                        
+                        if perfil["Tipo Vehículo"] != "Ninguno":
+                            st.markdown("---")
+                            st.markdown("**🚗 Información de Vehículo:**")
+                            st.markdown(f"**Tipo:** {perfil['Tipo Vehículo']} | **Placas:** {perfil['Placas']} | **Marbete:** {perfil['Marbete Pagado']}")
 
 # ==========================================
 # SECCIÓN 3: AGREGAR MIEMBRO
@@ -271,7 +306,7 @@ elif menu == "➕ Agregar":
             gafete = st.text_input("N° de Gafete")
         with col3:
             genero = st.selectbox("Género", ["Masculino", "Femenino"])
-            foto = st.file_uploader("Subir Foto", type=['png', 'jpg', 'jpeg'])
+            foto = st.file_uploader("Subir Foto del Miembro", type=['png', 'jpg', 'jpeg'])
             
         st.subheader("Contacto y Control Automotriz")
         col4, col5, col6 = st.columns(3)
@@ -300,17 +335,25 @@ elif menu == "➕ Agregar":
             if nombre == "" or telefono == "":
                 st.error("Por favor, llena Nombre y Teléfono.")
             else:
+                # Procesar Fotografía a texto (Base64)
+                foto_b64 = ""
+                tiene_foto = "No"
+                if foto is not None:
+                    foto_bytes = foto.read()
+                    foto_b64 = base64.b64encode(foto_bytes).decode('utf-8')
+                    tiene_foto = "Sí"
+
                 edad = calcular_edad(fecha_nac)
                 estado_ministerio = "Activo en Ministerio" if ministerio != "Ninguno" else "Solo Miembro"
                 rol_final = rol if ministerio != "Ninguno" else "No Aplica"
-                tiene_foto = "Sí" if foto is not None else "No"
                 
                 nuevo_registro = {
                     "ID": len(df) + 1, "Nombre Completo": nombre, "DPI": dpi, "Gafete": gafete, 
                     "Teléfono": telefono, "Correo": correo, "Dirección": direccion, 
                     "Fecha de Nacimiento": fecha_nac, "Edad": edad, "Género": genero,
                     "Estado en Ministerio": estado_ministerio, "Ministerio": ministerio, "Rol": rol_final,
-                    "Tipo Vehículo": vehiculo, "Placas": placas, "Marbete Pagado": marbete, "Tiene Foto": tiene_foto
+                    "Tipo Vehículo": vehiculo, "Placas": placas, "Marbete Pagado": marbete, 
+                    "Tiene Foto": tiene_foto, "Foto Base64": foto_b64
                 }
                 
                 st.session_state.miembros_df = pd.concat([df, pd.DataFrame([nuevo_registro])], ignore_index=True)
@@ -389,25 +432,21 @@ elif menu == "📜 Carta Rec.":
             pdf = FPDF()
             pdf.add_page()
             
-            # Usaremos tipografía Times (la más parecida a Bembo que soporta FPDF por defecto)
             pdf.set_font("Times", 'B', 18)
             pdf.cell(0, 15, "IGLESIA RESTAURACIÓN CRISTIANA", ln=True, align='C')
             pdf.set_font("Times", 'B', 14)
             pdf.cell(0, 10, "CARTA DE RECOMENDACIÓN", ln=True, align='C')
             pdf.ln(10)
             
-            # Fecha
             pdf.set_font("Times", '', 12)
             fecha_hoy = date.today().strftime("%d de %B de %Y")
             pdf.cell(0, 10, f"Fecha: {fecha_hoy}", ln=True, align='R')
             pdf.ln(10)
             
-            # Destinatario
             pdf.set_font("Times", 'B', 12)
             pdf.cell(0, 10, motivo.upper() + ":", ln=True, align='L')
             pdf.ln(5)
             
-            # Cuerpo
             pdf.set_font("Times", '', 12)
             texto_cuerpo = (
                 f"Por este medio hacemos constar y extendemos la presente recomendación a favor de "
@@ -422,7 +461,6 @@ elif menu == "📜 Carta Rec.":
             pdf.multi_cell(0, 8, texto_cuerpo.encode('latin-1', 'ignore').decode('latin-1'))
             pdf.ln(25)
             
-            # Firmas
             pdf.cell(0, 8, "_________________________________________", ln=True, align='C')
             pdf.set_font("Times", 'B', 12)
             pdf.cell(0, 8, "Pastor General José Manuel Rodríguez López", ln=True, align='C')
@@ -430,7 +468,6 @@ elif menu == "📜 Carta Rec.":
             pdf.cell(0, 8, "Iglesia Restauración Cristiana (IRC)", ln=True, align='C')
             pdf.cell(0, 8, "(Firma y Sello)", ln=True, align='C')
             
-            # Generar descarga
             with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
                 pdf.output(tmp.name)
                 with open(tmp.name, "rb") as f:
@@ -474,7 +511,6 @@ elif menu == "🗑️ Eliminar":
     else:
         st.warning("⚠️ Atención: Al eliminar un miembro, sus datos se borrarán permanentemente.")
         
-        # BARRA DE BÚSQUEDA PARA ELIMINAR
         busqueda_eliminar = st.text_input("🔍 Buscar miembro a eliminar (Nombre o DPI)...", "")
         
         if busqueda_eliminar:
@@ -509,7 +545,8 @@ elif menu == "💾 Exportar":
     else:
         buffer_excel = io.BytesIO()
         with pd.ExcelWriter(buffer_excel, engine='openpyxl') as writer:
-            df.drop(columns=["ID"]).to_excel(writer, index=False, sheet_name='Miembros IRC')
+            # Exportamos todo menos la Foto Base64 (que es un código larguísimo y arruinaría el Excel) y el ID interno
+            df.drop(columns=["ID", "Foto Base64"]).to_excel(writer, index=False, sheet_name='Miembros IRC')
         
         st.download_button("🟩 Descargar Directorio Completo en Excel", data=buffer_excel.getvalue(), file_name=f"Directorio_IRC_{date.today()}.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
