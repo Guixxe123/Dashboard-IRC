@@ -528,8 +528,12 @@ elif menu == "📜 Carta Rec.":
             
             # --- Añadir Logo en Esquina Superior Derecha si el archivo existe ---
             if os.path.exists("logo.png"):
-                # (x=165 para alinear a la derecha, y=10 para la parte superior, w=30 ajusta el ancho a 30mm)
-                pdf.image("logo.png", x=165, y=10, w=30)
+                try:
+                    # Intenta insertar el logo
+                    pdf.image("logo.png", x=165, y=10, w=30)
+                except Exception as e:
+                    # Si falla, no rompe el programa, solo avisa
+                    st.warning("⚠️ El logo no se pudo insertar porque 'logo.png' tiene un formato no compatible o está dañado. La carta se generará sin logo.")
             
             pdf.set_font("Times", 'B', 18)
             pdf.cell(0, 15, "IGLESIA RESTAURACIÓN CRISTIANA", ln=True, align='C')
