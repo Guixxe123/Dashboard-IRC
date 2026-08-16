@@ -526,14 +526,22 @@ elif menu == "📜 Carta Rec.":
             pdf = FPDF()
             pdf.add_page()
             
-            # --- Añadir Logo en Esquina Superior Derecha si el archivo existe ---
-            if os.path.exists("logo.png"):
-                try:
-                    # Intenta insertar el logo
-                    pdf.image("logo.png", x=165, y=10, w=30)
-                except Exception as e:
-                    # Si falla, no rompe el programa, solo avisa
-                    st.warning("⚠️ El logo no se pudo insertar porque 'logo.png' tiene un formato no compatible o está dañado. La carta se generará sin logo.")
+            # --- Estrella de David Azul en Esquina Superior Derecha ---
+            pdf.set_draw_color(0, 80, 180) # Color Azul
+            pdf.set_line_width(0.8) # Grosor de la línea
+            
+            # Triángulo apuntando hacia arriba
+            pdf.line(180, 10, 172, 24)
+            pdf.line(172, 24, 188, 24)
+            pdf.line(188, 24, 180, 10)
+            
+            # Triángulo apuntando hacia abajo
+            pdf.line(180, 28, 172, 14)
+            pdf.line(172, 14, 188, 14)
+            pdf.line(188, 14, 180, 28)
+            
+            # Restaurar el color de dibujo a negro para el resto del documento
+            pdf.set_draw_color(0, 0, 0)
             
             pdf.set_font("Times", 'B', 18)
             pdf.cell(0, 15, "IGLESIA RESTAURACIÓN CRISTIANA", ln=True, align='C')
@@ -569,7 +577,6 @@ elif menu == "📜 Carta Rec.":
             pdf.cell(0, 8, "Pastor General José Manuel Rodríguez López", ln=True, align='C')
             pdf.set_font("Times", '', 11)
             pdf.cell(0, 8, "Iglesia Restauración Cristiana (IRC)", ln=True, align='C')
-            # TEXTO (Firma y Sello) ELIMINADO
             
             with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
                 pdf.output(tmp.name)
