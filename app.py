@@ -17,8 +17,8 @@ st.markdown("""
     /* Importar fuente serif elegante de respaldo */
     @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;700&display=swap');
 
-    /* Aplicar Bembo Book a TODO, con EB Garamond de respaldo */
-    html, body, [class*="css"], .stApp, p, h1, h2, h3, div, span, label, button, input, select, textarea, table {
+    /* Aplicar Bembo Book, EXCLUYENDO 'span' para no arruinar los íconos internos de Streamlit (el error de uploadUpload) */
+    html, body, .stApp, p, h1, h2, h3, label, button, input, select, textarea, table, th, td {
         font-family: 'Bembo Book', 'EB Garamond', 'Times New Roman', serif !important;
     }
 
@@ -266,7 +266,26 @@ elif menu == "📊 Dashboard":
         
         with tab1:
             st.write("Datos generales de la congregación:")
-            st.dataframe(df_mostrar.drop(columns=["ID", "Foto Base64"]), use_container_width=True)
+            
+            # Formateamos la foto para que se vea en pequeño a la par del nombre en la tabla
+            df_mostrar_tabla = df_mostrar.copy()
+            df_mostrar_tabla["📸 Foto"] = df_mostrar_tabla["Foto Base64"].apply(
+                lambda x: f"data:image/jpeg;base64,{x}" if pd.notna(x) and x != "" else None
+            )
+            
+            # Ordenamos las columnas para que la foto aparezca de primero
+            cols_ordenadas = ["📸 Foto", "Nombre Completo", "DPI", "Gafete", "Teléfono", "Correo", "Dirección", "Fecha de Nacimiento", "Edad", "Género", "Estado en Ministerio", "Ministerio", "Rol", "Tipo Vehículo", "Placas", "Marbete Pagado"]
+            
+            df_final_tabla = df_mostrar_tabla[cols_ordenadas]
+            
+            st.dataframe(
+                df_final_tabla,
+                column_config={
+                    "📸 Foto": st.column_config.ImageColumn("📸 Foto", help="Fotografía del miembro")
+                },
+                use_container_width=True,
+                hide_index=True
+            )
             
         with tab2:
             st.write("Selecciona un miembro para ver su fotografía e información detallada:")
@@ -282,7 +301,6 @@ elif menu == "📊 Dashboard":
                     with col_img:
                         if pd.notna(perfil["Foto Base64"]) and perfil["Foto Base64"] != "":
                             try:
-                                # Aquí usamos el HTML especial para que la foto de perfil no tome la animación del logo
                                 html_foto = f'<img src="data:image/jpeg;base64,{perfil["Foto Base64"]}" class="foto-perfil">'
                                 st.markdown(html_foto, unsafe_allow_html=True)
                             except Exception as e:
