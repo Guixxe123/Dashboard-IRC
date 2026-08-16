@@ -11,7 +11,7 @@ from fpdf import FPDF
 # ==========================================
 st.set_page_config(page_title="Dashboard IRC", page_icon="✝️", layout="wide")
 
-# CSS personalizado 
+# CSS personalizado (Tema Negro y Dorado)
 st.markdown("""
     <style>
     /* Importar fuente serif elegante de respaldo */
@@ -22,19 +22,19 @@ st.markdown("""
         font-family: 'Bembo Book', 'EB Garamond', 'Times New Roman', serif !important;
     }
 
-    /* Fondo general de la aplicación */
+    /* Fondo general de la aplicación (Negro Profundo) */
     .stApp {
-        background-color: #0A192F; 
+        background-color: #050505; 
         color: #E2E8F0; 
     }
 
-    /* Título principal (SIN DISTORSIÓN) */
+    /* Título principal */
     .titulo-portada {
         font-size: 55px; 
         font-weight: 700;
         text-align: center;
         color: #FFFFFF; 
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); 
+        text-shadow: 2px 2px 8px rgba(212, 175, 55, 0.4); 
         margin-bottom: 0px;
         padding-bottom: 10px;
         line-height: 1.2;
@@ -44,7 +44,7 @@ st.markdown("""
         font-size: 22px;
         font-weight: 500;
         text-align: center;
-        color: #A0AEC0;
+        color: #D4AF37; /* Dorado */
         margin-top: 0px;
         margin-bottom: 30px;
         letter-spacing: 2px;
@@ -63,11 +63,11 @@ st.markdown("""
         margin-top: 20px; margin-bottom: 30px;
     }
 
-    /* ANIMACIÓN DE FLOTACIÓN (Cruz y Logo) */
+    /* ANIMACIÓN DE FLOTACIÓN (Resplandor Dorado) */
     @keyframes float {
-        0% { transform: translateY(0px); filter: drop-shadow(0 0 10px rgba(99, 179, 237, 0.4)); }
-        50% { transform: translateY(-15px); filter: drop-shadow(0 0 25px rgba(99, 179, 237, 0.9)); }
-        100% { transform: translateY(0px); filter: drop-shadow(0 0 10px rgba(99, 179, 237, 0.4)); }
+        0% { transform: translateY(0px); filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.3)); }
+        50% { transform: translateY(-15px); filter: drop-shadow(0 0 25px rgba(212, 175, 55, 0.8)); }
+        100% { transform: translateY(0px); filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.3)); }
     }
     
     .cruz-animada {
@@ -75,57 +75,59 @@ st.markdown("""
         margin: 0 auto; margin-bottom: 20px;
     }
 
-    /* ESTILO RESTAURADO: Logo Circular y Flotante */
+    /* Logo Circular y Flotante */
     [data-testid="stImage"] img {
         border-radius: 50%; 
-        box-shadow: 0 10px 30px rgba(99, 179, 237, 0.2);
-        border: 4px solid #2B6CB0; 
+        box-shadow: 0 10px 30px rgba(212, 175, 55, 0.2);
+        border: 4px solid #D4AF37; /* Borde Dorado */
         object-fit: cover; 
         animation: float 3.5s ease-in-out infinite;
     }
 
-    /* NUEVO ESTILO: Fotos de Perfil (Cuadradas, bordes suaves, sin flotar) */
+    /* Fotos de Perfil */
     .foto-perfil {
         border-radius: 12px; 
         width: 100%; 
         max-width: 350px;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
-        border: 2px solid #63B3ED;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.8);
+        border: 2px solid #D4AF37; /* Borde Dorado */
         object-fit: cover;
     }
 
-    /* Estilo para TODOS los botones */
+    /* Estilo para TODOS los botones (Dorados) */
     div.stButton > button, div.stDownloadButton > button, div.stFormSubmitButton > button {
-        background: linear-gradient(135deg, #1E3A8A 0%, #3182CE 100%) !important;
-        color: #FFFFFF !important; border-radius: 12px !important; border: 1px solid #63B3ED !important;
+        background: linear-gradient(135deg, #AA8529 0%, #D4AF37 100%) !important;
+        color: #000000 !important; /* Texto negro para contraste elegante */
+        border-radius: 12px !important; border: 1px solid #F1C40F !important;
         padding: 10px 15px !important; font-weight: 700 !important; letter-spacing: 0.5px !important;
-        box-shadow: 0 4px 15px rgba(49, 130, 206, 0.4) !important; transition: all 0.3s ease !important; width: 100%;
+        box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3) !important; transition: all 0.3s ease !important; width: 100%;
         font-family: 'Segoe UI', sans-serif !important;
     }
     div.stButton > button:hover, div.stDownloadButton > button:hover, div.stFormSubmitButton > button:hover {
-        background: linear-gradient(135deg, #2B6CB0 0%, #4299E1 100%) !important;
-        box-shadow: 0 6px 20px rgba(99, 179, 237, 0.8) !important; transform: translateY(-4px) !important;
-        border: 1px solid #E2E8F0 !important;
+        background: linear-gradient(135deg, #D4AF37 0%, #F1C40F 100%) !important;
+        box-shadow: 0 6px 20px rgba(212, 175, 55, 0.6) !important; transform: translateY(-4px) !important;
+        border: 1px solid #FFFFFF !important;
     }
 
     /* Recuadros de métricas */
     [data-testid="metric-container"] {
-        background-color: #112240; border: 1px solid #233554; border-radius: 12px;
-        padding: 20px; box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+        background-color: #121212; border: 1px solid #333333; border-radius: 12px;
+        padding: 20px; box-shadow: 0 8px 16px rgba(0,0,0,0.6);
+        border-bottom: 3px solid #D4AF37; /* Acento dorado abajo */
     }
-    [data-testid="metric-container"] label { color: #8892B0 !important; font-size: 18px !important; font-family: 'Segoe UI', sans-serif !important; }
-    [data-testid="metric-container"] div { color: #63B3ED !important; font-size: 32px !important; }
+    [data-testid="metric-container"] label { color: #A0AEC0 !important; font-size: 18px !important; font-family: 'Segoe UI', sans-serif !important; }
+    [data-testid="metric-container"] div { color: #D4AF37 !important; font-size: 32px !important; text-shadow: 1px 1px 5px rgba(212,175,55,0.3); }
 
     /* Entradas de texto */
     .stTextInput > div > div > input, .stSelectbox > div > div > div, .stTextArea > div > div > textarea {
-        background-color: #112240 !important; color: white !important; border-radius: 8px !important;
-        border: 1px solid #2B6CB0 !important;
+        background-color: #121212 !important; color: white !important; border-radius: 8px !important;
+        border: 1px solid #5C4A11 !important; /* Borde dorado oscuro */
     }
     
     /* Pie de página */
     .footer-versiculo {
         text-align: center; font-size: 18px; font-style: italic; color: #8892B0;
-        margin-top: 60px; padding-top: 20px; border-top: 1px solid #233554;
+        margin-top: 60px; padding-top: 20px; border-top: 1px solid #333333;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -210,10 +212,10 @@ if menu == "🏠 Inicio":
     st.markdown("""
         <style>
         .stApp {
-            background-color: #0A192F !important;
+            background-color: #050505 !important;
             background-image: 
-                radial-gradient(circle at 50% 50%, rgba(43, 108, 176, 0.25) 0%, transparent 65%),
-                repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.03) 0px, rgba(255, 255, 255, 0.03) 2px, transparent 2px, transparent 15px) !important;
+                radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.10) 0%, transparent 60%),
+                repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.02) 0px, rgba(255, 255, 255, 0.02) 2px, transparent 2px, transparent 15px) !important;
         }
         </style>
     """, unsafe_allow_html=True)
@@ -588,11 +590,80 @@ elif menu == "💾 Exportar":
     if df.empty:
         st.warning("No hay datos para exportar.")
     else:
-        buffer_excel = io.BytesIO()
-        with pd.ExcelWriter(buffer_excel, engine='openpyxl') as writer:
-            df.drop(columns=["ID", "Foto Base64"]).to_excel(writer, index=False, sheet_name='Miembros IRC')
+        # --- 1. VISTA PREVIA ---
+        st.subheader("👁️ Vista Previa de Datos")
+        df_exportar = df.drop(columns=["ID", "Foto Base64", "Tiene Foto"], errors='ignore')
+        st.dataframe(df_exportar, use_container_width=True)
         
-        st.download_button("🟩 Descargar Directorio Completo en Excel", data=buffer_excel.getvalue(), file_name=f"Directorio_IRC_{date.today()}.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        st.write("---")
+        st.subheader("📥 Opciones de Descarga")
+        col1, col2 = st.columns(2)
+        
+        # --- 2. DESCARGAR EXCEL ---
+        with col1:
+            buffer_excel = io.BytesIO()
+            with pd.ExcelWriter(buffer_excel, engine='openpyxl') as writer:
+                df_exportar.to_excel(writer, index=False, sheet_name='Miembros IRC')
+            
+            st.download_button(
+                "🟩 Descargar Excel", 
+                data=buffer_excel.getvalue(), 
+                file_name=f"Directorio_IRC_{date.today()}.xlsx", 
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                use_container_width=True
+            )
+            
+        # --- 3. DESCARGAR PDF ---
+        with col2:
+            # Generar el PDF en memoria
+            pdf = FPDF(orientation='L') 
+            pdf.add_page()
+            
+            # Encabezado
+            pdf.set_font("Times", 'B', 16)
+            pdf.cell(0, 10, "Directorio de Miembros - IRC", ln=True, align='C')
+            pdf.set_font("Times", '', 10)
+            pdf.cell(0, 10, f"Fecha de exportacion: {date.today().strftime('%d/%m/%Y')}", ln=True, align='C')
+            pdf.ln(5)
+            
+            # Seleccionamos columnas principales
+            cols_pdf = ["Nombre Completo", "Teléfono", "Ministerio", "Rol", "Vehículo"]
+            col_widths = [70, 35, 60, 60, 45]
+            
+            # Encabezados de tabla
+            pdf.set_font("Times", 'B', 10)
+            for i, col_name in enumerate(cols_pdf):
+                nombre_col = "Tipo Vehículo" if col_name == "Vehículo" else col_name
+                pdf.cell(col_widths[i], 10, nombre_col, border=1, align='C')
+            pdf.ln()
+            
+            # Filas de tabla
+            pdf.set_font("Times", '', 9)
+            for index, row in df.iterrows():
+                nom = str(row.get("Nombre Completo", "")).encode('latin-1', 'replace').decode('latin-1')[:35]
+                tel = str(row.get("Teléfono", "")).encode('latin-1', 'replace').decode('latin-1')[:15]
+                minis = str(row.get("Ministerio", "")).encode('latin-1', 'replace').decode('latin-1')[:30]
+                rol = str(row.get("Rol", "")).encode('latin-1', 'replace').decode('latin-1')[:30]
+                veh = str(row.get("Tipo Vehículo", "")).encode('latin-1', 'replace').decode('latin-1')[:20]
+                
+                valores = [nom, tel, minis, rol, veh]
+                
+                for i, val in enumerate(valores):
+                    pdf.cell(col_widths[i], 10, val, border=1)
+                pdf.ln()
+                
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+                pdf.output(tmp.name)
+                with open(tmp.name, "rb") as f:
+                    pdf_bytes = f.read()
+
+            st.download_button(
+                "🟥 Descargar PDF", 
+                data=pdf_bytes, 
+                file_name=f"Directorio_IRC_{date.today()}.pdf", 
+                mime="application/pdf",
+                use_container_width=True
+            )
 
 # ==========================================
 # FOOTER (VERSÍCULO)
